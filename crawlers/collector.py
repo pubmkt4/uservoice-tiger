@@ -218,12 +218,16 @@ def run_collection(keyword: str, config: dict, log_fn) -> dict:
 # ── 헬퍼 ─────────────────────────────────────────────────────
 
 def _dc_log_wrapper(log_fn, results: dict):
-    """DC 로그 콜백 — 차단 감지 시 플래그 설정"""
+    """DC 로그 콜백 — 진행 상황 출력 + 차단 감지 시 플래그 설정"""
     def callback(msg):
-        if "403" in msg or "IP 제한" in msg:
+        if "⛔" in msg or ("연속 403" in msg):
+            results["dc_blocked"] = True
+            log_fn(f"⛔ 디시인사이드 IP 차단 — 수집 즉시 중단")
+        elif "403" in msg or "IP 제한" in msg or "IP 차단" in msg:
             if not results["dc_blocked"]:
                 results["dc_blocked"] = True
-                log_fn("⚠️ 디시 IP 차단 감지 — 다른 플랫폼 수집은 계속 진행됩니다")
+                log_fn("⚠️ 디시 접근 제한 감지 — 재시도 중...")
+            log_fn(msg)
         else:
             log_fn(msg)
     return callback

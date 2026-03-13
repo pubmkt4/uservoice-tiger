@@ -824,11 +824,21 @@ with left_col:
             with dc2:
                 dc_is_minor = st.checkbox("마이너", value=True)
             with dc3:
-                dc_max_pages = st.number_input("페이지 수", min_value=1, max_value=100, value=10, key="dc_pages")
+                dc_max_pages = st.number_input(
+                    "페이지 수", min_value=1, max_value=20, value=5, key="dc_pages",
+                    help="페이지 수가 많을수록 IP 차단 위험 증가. 5 이하 권장."
+                )
+            # 페이지 수 기반 위험도 안내
+            if dc_max_pages <= 5:
+                st.caption("✅ 안전 범위 (5페이지 이하)")
+            elif dc_max_pages <= 10:
+                st.caption("⚠️ 주의 — 반복 수집 시 IP 차단 가능")
+            else:
+                st.caption("🚨 위험 — IP 차단 가능성 높음. 하루 1회 이하 권장")
         else:
             dc_gallery_id = ""
             dc_is_minor   = True
-            dc_max_pages  = 10
+            dc_max_pages  = 5
 
     # ── 앱스토어 ──────────────────────────────────────────────
     with st.container(border=True):
@@ -994,12 +1004,18 @@ with tab_collect:
         result = st.session_state.collection_result or {}
         c1, c2, c3, c4 = st.columns(4)
         c1.metric("YouTube",      result.get("yt_count",   "—"))
-        c2.metric("디시인사이드", result.get("dc_count",   "—"))
+        _dc_label = "디시인사이드 ⛔차단" if result.get("dc_blocked") else "디시인사이드"
+        c2.metric(_dc_label,      result.get("dc_count",   "—"))
         c3.metric("앱스토어",     result.get("app_count",  "—"))
         c4.metric("플레이스토어", result.get("play_count", "—"))
 
         if result.get("dc_blocked"):
-            st.warning("⚠️ 디시인사이드 IP 차단이 감지되어 수집이 제한됐습니다.")
+            st.error(
+                "⛔ **디시인사이드 IP 차단 감지** — 수집이 중단됐습니다.  \n"
+                "차단 전까지 수집된 데이터는 분석에 포함됩니다.  \n"
+                "동일 IP로 재수집은 몇 시간 후 시도하세요.",
+                icon="🚫"
+            )
 
         log_text = "\n".join(st.session_state.collection_log) or "수집 대기 중..."
         st.text_area("수집 로그", value=log_text, height=300, disabled=True,
