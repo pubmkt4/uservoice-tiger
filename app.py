@@ -28,6 +28,9 @@ _YT_API_KEY   = st.secrets.get("youtube", {}).get("api_key", "")
 _GCP_PROJECT  = st.secrets.get("gcp", {}).get("project_id", "o-pubmkt4-team")
 _GCP_REGION   = st.secrets.get("gcp", {}).get("region", "us-east5")
 
+_VERSION = "v1.0"
+_TEAM    = "퍼블리싱마케팅4팀"
+
 # ─── 호랑이 PNG 로딩 애니메이션 ──────────────────────────────
 
 def _tiger_b64() -> str:
@@ -140,158 +143,139 @@ _SENT_EMOJI = {"긍정": "😊", "부정": "😠", "혼재": "😐"}
 
 _CARD_CSS = """
 <style>
-/* ── 리포트 헤더 ── */
-.rpt-header {
-    background: linear-gradient(135deg, #0F2027 0%, #203A43 60%, #2C5364 100%);
-    border-radius: 16px; padding: 22px 28px; margin-bottom: 18px; color: white;
-}
-.rpt-header-kw   { font-size: 1.4rem; font-weight: 800; letter-spacing: 0.3px; }
-.rpt-header-meta { font-size: 0.78rem; color: rgba(255,255,255,0.55); margin-top: 4px; }
-.rpt-pills       { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px;
-                   align-items: center; }
-.rpt-pill {
-    background: rgba(255,255,255,0.13); border-radius: 20px;
-    padding: 4px 13px; font-size: 0.74rem; color: rgba(255,255,255,0.8);
-}
-.rpt-total {
-    background: #E8720C; border-radius: 20px;
-    padding: 4px 14px; font-size: 0.74rem; font-weight: 700; color: white;
-}
-/* ── 감성 % 바 ── */
-.sent-lbl-row { display: flex; gap: 16px; font-size: 0.73rem; color: #888; margin-bottom: 4px; }
-/* ── 요약 박스 ── */
-.summary-box {
-    background: linear-gradient(135deg, #E8F4FD 0%, #EDE7F6 100%);
-    border-radius: 14px; padding: 18px 22px; margin-bottom: 4px;
-    font-size: 0.92rem; color: #1A237E; line-height: 1.75;
-    border-left: 5px solid #3F51B5;
-}
+/* ── 다크 리포트 공통 ── */
+.dr-wrap { background:#1C1C1E; border-radius:14px; padding:22px 24px; margin-bottom:14px; color:#E8E8E8; }
+.dr-brand { font-size:0.67rem; color:#555; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:10px; }
+.dr-brand em { color:#E8720C; font-style:normal; }
+.dr-title { font-size:1.9rem; font-weight:900; color:#FFFFFF; line-height:1.15; margin-bottom:6px; }
+.dr-title b { color:#E8720C; }
+.dr-sub { font-size:0.76rem; color:#666; margin-bottom:16px; }
+.dr-pills { display:flex; gap:7px; flex-wrap:wrap; }
+.dr-pill { background:#2A2A2A; border-radius:4px; padding:3px 10px; font-size:0.7rem; color:#888; }
+.dr-pill-total { background:#E8720C; border-radius:4px; padding:3px 10px; font-size:0.7rem; font-weight:700; color:white; }
+/* ── 섹션 레이블 ── */
+.sec-lbl { font-size:0.67rem; color:#555; letter-spacing:0.8px; text-transform:uppercase;
+           font-weight:600; margin:20px 0 12px; padding-bottom:8px; border-bottom:1px solid #2A2A2A; }
+/* ── 감성 메트릭 카드 ── */
+.met-card { background:#242424; border-radius:10px; padding:18px 16px; margin-bottom:6px; }
+.met-num { font-size:2.8rem; font-weight:800; line-height:1; }
+.met-pct { font-size:0.74rem; color:#888; margin-top:5px; }
+.met-bar { height:3px; border-radius:2px; margin-top:14px; }
+/* ── 전체 감성 바 ── */
+.sent-total-bar { display:flex; height:7px; border-radius:4px; overflow:hidden; margin:10px 0 6px; }
+.sent-lbl-row2 { display:flex; gap:16px; font-size:0.69rem; }
+/* ── 채널별 감성 ── */
+.ch-row { padding:12px 0; border-bottom:1px solid #2A2A2A; }
+.ch-row:last-child { border-bottom:none; }
+.ch-name { font-size:0.85rem; font-weight:700; color:#E0E0E0; }
+.ch-sub { font-size:0.69rem; color:#555; margin-bottom:8px; margin-top:2px; }
+.ch-bar-row { display:flex; align-items:center; gap:8px; margin-bottom:3px; }
+.ch-bar-lbl { font-size:0.67rem; width:22px; flex-shrink:0; }
+.ch-bar-bg { flex:1; background:#2A2A2A; border-radius:3px; height:6px; overflow:hidden; }
+.ch-bar-fill { height:100%; border-radius:3px; }
+.ch-bar-pct { font-size:0.67rem; color:#666; width:28px; text-align:right; flex-shrink:0; }
+/* ── 감성 pill ── */
+.pill-neg { background:#9B2C2C; color:white; border-radius:6px; padding:5px 14px;
+            font-size:0.8rem; font-weight:700; display:inline-block; margin-bottom:8px; }
+.pill-pos { background:#276749; color:white; border-radius:6px; padding:5px 14px;
+            font-size:0.8rem; font-weight:700; display:inline-block; margin-bottom:8px; }
+.pill-neu { background:#2D3748; color:white; border-radius:6px; padding:5px 14px;
+            font-size:0.8rem; font-weight:700; display:inline-block; margin-bottom:8px; }
+/* ── 테마 테이블 행 ── */
+.th-row { display:flex; gap:20px; padding:10px 0; border-bottom:1px solid #2A2A2A; }
+.th-row:last-child { border-bottom:none; }
+.th-name { font-size:0.84rem; font-weight:700; color:#E0E0E0; min-width:110px; max-width:140px;
+           flex-shrink:0; line-height:1.4; word-break:keep-all; }
+.th-desc { font-size:0.81rem; color:#999; line-height:1.6; }
 /* ── 인사이트 카드 ── */
-.insight-card {
-    background: #FFFFFF; border-radius: 14px; padding: 18px 20px;
-    box-shadow: 0 3px 16px rgba(0,0,0,0.08); border-left: 5px solid #9E9E9E;
-    margin-bottom: 10px;
-}
-.card-title   { font-size: 0.97rem; font-weight: 700; margin-bottom: 8px; color: #111; }
-.card-badge   { display: inline-block; padding: 2px 11px; border-radius: 20px;
-                font-size: 0.74rem; font-weight: 600; color: #fff;
-                background: #9E9E9E; margin-bottom: 10px; }
-.card-insight { font-size: 0.88rem; color: #333; line-height: 1.65; margin-bottom: 8px; }
-.card-evidence{ font-size: 0.79rem; color: #555; padding: 7px 11px;
-                background: #F8F9FA; border-radius: 7px; border-left: 3px solid #ddd; }
-.card-action  { font-size: 0.81rem; color: #1565C0; font-weight: 600;
-                margin-top: 9px; padding: 6px 10px;
-                background: #EEF5FF; border-radius: 6px; }
-/* ── 테마 카드 ── */
-.theme-card {
-    background: white; border-radius: 14px; padding: 18px 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.07); margin-bottom: 12px;
-}
-.theme-head { display: flex; justify-content: space-between;
-              align-items: flex-start; margin-bottom: 4px; }
-.theme-name { font-size: 0.96rem; font-weight: 700; color: #111; }
-.theme-badge {
-    background: #F0F4FF; color: #3F51B5; border-radius: 12px;
-    padding: 2px 10px; font-size: 0.71rem; font-weight: 700; white-space: nowrap;
-}
-.theme-desc { font-size: 0.80rem; color: #666; margin-bottom: 11px; line-height: 1.5; }
-.theme-ex   { font-size: 0.79rem; color: #444; background: #FFF8F3;
-              border-left: 3px solid #E8720C; border-radius: 0 6px 6px 0;
-              padding: 5px 10px; margin-top: 5px; }
-/* ── 섹션 제목 ── */
-.sec-title {
-    font-size: 1.02rem; font-weight: 700; color: #222;
-    margin: 0 0 12px; padding-bottom: 8px; border-bottom: 2px solid #F0F0F0;
-}
-.rpt-divider { border: none; border-top: 2px solid #F0F0F0; margin: 18px 0; }
+.ins-card { display:flex; gap:16px; padding:14px 0; border-bottom:1px solid #2A2A2A; align-items:flex-start; }
+.ins-card:last-child { border-bottom:none; }
+.ins-num { background:#9B2C2C; color:white; font-size:0.7rem; font-weight:800;
+           width:26px; height:26px; border-radius:4px; display:flex; align-items:center;
+           justify-content:center; flex-shrink:0; font-family:monospace; }
+.ins-body { flex:1; }
+.ins-title { font-size:0.9rem; font-weight:700; color:#E0E0E0; margin-bottom:5px; }
+.ins-text { font-size:0.83rem; color:#999; line-height:1.65; }
+.ins-action { font-size:0.8rem; color:#E8720C; margin-top:6px; }
+/* ── 요약 박스 ── */
+.sum-box { background:#242424; border-left:4px solid #E8720C; border-radius:0 8px 8px 0;
+           padding:16px 18px; font-size:0.87rem; color:#CCC; line-height:1.75; }
+/* ── 빠른요약 ── */
+.qs-topic-row { display:flex; gap:14px; padding:9px 0; border-bottom:1px solid #2A2A2A; align-items:flex-start; }
+.qs-topic-row:last-child { border-bottom:none; }
+.qs-rank { background:#2A2A2A; color:#888; font-size:0.69rem; font-weight:700;
+           width:20px; height:20px; border-radius:3px; display:flex; align-items:center;
+           justify-content:center; flex-shrink:0; }
+.qs-topic-name { font-size:0.85rem; font-weight:700; color:#E0E0E0; margin-bottom:2px; }
+.qs-topic-desc { font-size:0.8rem; color:#888; line-height:1.5; }
 </style>
 """
 
 
 def _render_quick_summary(qs: dict):
-    """빠른 요약 결과를 컴팩트하게 렌더링"""
+    """빠른 요약 결과를 다크 테마로 렌더링"""
     st.markdown(_CARD_CSS, unsafe_allow_html=True)
 
-    sent        = qs.get("sentiment", "혼재")
-    sent_color  = _SENT_COLOR.get(sent, "#9E9E9E")
-    sent_emoji  = _SENT_EMOJI.get(sent, "😐")
-    sample_cnt  = qs.get("sample_count", 0)
-    total_cnt   = qs.get("total_count", 0)
+    sent       = qs.get("sentiment", "혼재")
+    sent_color = {"긍정": "#276749", "부정": "#9B2C2C"}.get(sent, "#2D3748")
+    sample_cnt = qs.get("sample_count", 0)
+    total_cnt  = qs.get("total_count", 0)
 
-    # 배너 헤더
     st.markdown(f"""
-<div style="background:linear-gradient(135deg,#1e3a5f 0%,#1a4731 100%);
-            border-radius:14px;padding:18px 24px;margin-bottom:16px;color:white;
-            display:flex;align-items:center;gap:16px">
-  <div style="font-size:2rem;flex-shrink:0">⚡</div>
-  <div style="flex:1">
-    <div style="font-size:1.05rem;font-weight:700">빠른 동향 요약</div>
-    <div style="font-size:0.74rem;color:rgba(255,255,255,0.55);margin-top:3px">
-      전체 {total_cnt:,}건 중 샘플 {sample_cnt}건 기반 · Claude AI 정성 추정
-    </div>
-  </div>
-  <div style="background:rgba(255,255,255,0.15);border-radius:20px;
-              padding:5px 16px;font-size:0.84rem;font-weight:700;flex-shrink:0">
-    {sent_emoji} 전반적 분위기: {sent}
-  </div>
+<div class="dr-wrap">
+  <div class="dr-brand"><em>●</em> 동향 수집하는 호랑이 · QUICK SUMMARY</div>
+  <div class="dr-title">빠른 <b>동향 요약</b></div>
+  <div class="dr-sub">전체 {total_cnt:,}건 중 샘플 {sample_cnt}건 기반 · Claude AI 정성 추정</div>
+  <span style="background:{sent_color};color:white;border-radius:6px;padding:4px 12px;
+               font-size:0.78rem;font-weight:700">전반적 분위기: {sent}</span>
 </div>""", unsafe_allow_html=True)
 
-    # 요약 + 감성 이유
     if qs.get("summary"):
-        reason_html = (
-            f'<br><br><span style="font-size:0.82rem;color:#5B21B6;font-style:italic">'
+        st.markdown('<div class="sec-lbl">전체 동향</div>', unsafe_allow_html=True)
+        reason = (
+            f'<br><br><span style="color:#888;font-size:0.82rem;font-style:italic">'
             f'💡 {qs["sentiment_reason"]}</span>'
             if qs.get("sentiment_reason") else ""
         )
-        st.markdown(
-            f'<div class="summary-box">📋 <b>전체 동향</b><br><br>'
-            f'{qs["summary"]}{reason_html}</div>',
-            unsafe_allow_html=True
-        )
+        st.markdown(f'<div class="sum-box">{qs["summary"]}{reason}</div>', unsafe_allow_html=True)
 
     col_topics, col_watch = st.columns([3, 2])
 
-    # 핫 토픽
     with col_topics:
-        st.markdown('<div class="sec-title">🔥 핫 토픽</div>', unsafe_allow_html=True)
+        st.markdown('<div class="sec-lbl">핫 토픽</div>', unsafe_allow_html=True)
+        topics_html = '<div style="background:#1C1C1E;border-radius:10px;padding:12px 16px">'
         for topic in qs.get("hot_topics", []):
             t_sent  = topic.get("sentiment", "혼재")
-            t_color = _SENT_COLOR.get(t_sent, "#9E9E9E")
-            t_emoji = _SENT_EMOJI.get(t_sent, "😐")
-            st.markdown(f"""
-<div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;
-            border-bottom:1px solid #F0F0F0">
-  <div style="width:24px;height:24px;border-radius:50%;background:#1e3a5f;color:white;
-              font-size:0.72rem;font-weight:700;display:flex;align-items:center;
-              justify-content:center;flex-shrink:0">{topic.get('rank','')}</div>
+            t_color = {"긍정": "#276749", "부정": "#9B2C2C"}.get(t_sent, "#2D3748")
+            topics_html += f"""
+<div class="qs-topic-row">
+  <div class="qs-rank">{topic.get('rank','')}</div>
   <div style="flex:1">
-    <div style="font-size:0.88rem;font-weight:700;color:#111;margin-bottom:3px">
-      {topic.get('topic','')}</div>
-    <div style="font-size:0.80rem;color:#555;line-height:1.55">{topic.get('desc','')}</div>
+    <div class="qs-topic-name">{topic.get('topic','')}</div>
+    <div class="qs-topic-desc">{topic.get('desc','')}</div>
   </div>
-  <span style="background:{t_color};color:white;border-radius:10px;
-               padding:2px 9px;font-size:0.68rem;font-weight:600;flex-shrink:0;
-               white-space:nowrap">{t_emoji} {t_sent}</span>
-</div>""", unsafe_allow_html=True)
+  <span style="background:{t_color};color:white;border-radius:4px;padding:2px 8px;
+               font-size:0.67rem;font-weight:600;white-space:nowrap;flex-shrink:0">{t_sent}</span>
+</div>"""
+        topics_html += '</div>'
+        st.markdown(topics_html, unsafe_allow_html=True)
 
-    # 주목 이슈 + 활용 가이드
     with col_watch:
         if qs.get("watch_point"):
-            st.markdown('<div class="sec-title">👀 주목 이슈</div>', unsafe_allow_html=True)
+            st.markdown('<div class="sec-lbl">주목 이슈</div>', unsafe_allow_html=True)
             st.markdown(f"""
-<div style="background:#FFF3CD;border-radius:12px;padding:15px 17px;
-            border-left:4px solid #F59E0B;font-size:0.87rem;
-            color:#78350F;line-height:1.65;margin-bottom:12px">
+<div style="background:#2D1B1B;border-left:4px solid #E53E3E;border-radius:0 8px 8px 0;
+            padding:14px 16px;font-size:0.84rem;color:#FBB;line-height:1.65;margin-bottom:12px">
   ⚠️ {qs['watch_point']}
 </div>""", unsafe_allow_html=True)
 
         st.markdown("""
-<div style="background:#F8FAFC;border-radius:10px;padding:13px 15px;
-            border:1px solid #E2E8F0;font-size:0.75rem;color:#64748B;line-height:1.8">
-  <b>📌 이 결과를 볼 때 꼭 알아두세요</b><br>
-  · 샘플 기반 <b>추정치</b> — 수치 그대로 인용 금지<br>
+<div style="background:#1C1C1E;border-radius:8px;padding:12px 14px;
+            border:1px solid #2A2A2A;font-size:0.73rem;color:#555;line-height:1.8">
+  <span style="color:#888;font-weight:600">📌 이 결과를 볼 때 꼭 알아두세요</span><br>
+  · 샘플 기반 <span style="color:#888">추정치</span> — 수치 그대로 인용 금지<br>
   · 누락된 맥락이 있을 수 있음<br>
-  · 정확한 근거가 필요하면 <b>정밀 분석</b> 사용<br>
+  · 정확한 근거가 필요하면 <span style="color:#888">정밀 분석</span> 사용<br>
   · 동향 방향 확인, 보고 전 사전 점검에 적합
 </div>""", unsafe_allow_html=True)
 
@@ -313,66 +297,137 @@ def _render_dashboard(ar: dict):
     total = pos + neu + neg or 1
     pos_pct = round(pos / total * 100)
     neu_pct = round(neu / total * 100)
-    neg_pct = 100 - pos_pct - neu_pct  # 반올림 오차 보정
+    neg_pct = 100 - pos_pct - neu_pct
 
     platform_counts = {p: len(v) for p, v in items_by_plat.items() if v}
+
+    # 플랫폼별 감성 집계
+    plat_sent = {}
+    for plat, items_list in items_by_plat.items():
+        if not items_list: continue
+        pp = sum(1 for i in items_list if i.get("sentiment") == "긍정")
+        pn = sum(1 for i in items_list if i.get("sentiment") == "중립")
+        pg = sum(1 for i in items_list if i.get("sentiment") == "부정")
+        pt = pp + pn + pg or 1
+        plat_sent[plat] = {
+            "count": pt, "pos_pct": round(pp/pt*100),
+            "neu_pct": round(pn/pt*100), "neg_pct": round(pg/pt*100),
+        }
 
     st.markdown(_CARD_CSS, unsafe_allow_html=True)
 
     # ── 리포트 헤더 ──────────────────────────────────────────
     pills_html = "".join(
-        f'<span class="rpt-pill">{p} {n:,}건</span>'
-        for p, n in platform_counts.items()
+        f'<span class="dr-pill">{p} {n:,}건</span>' for p, n in platform_counts.items()
     )
     st.markdown(f"""
-<div class="rpt-header">
-  <div class="rpt-header-kw">🐯 게임 동향 분석 리포트</div>
-  <div class="rpt-header-meta">{datetime.now().strftime('%Y년 %m월 %d일')} 기준 · Claude AI 분석</div>
-  <div class="rpt-pills">{pills_html}<span class="rpt-total">총 {total:,}건</span></div>
+<div class="dr-wrap">
+  <div class="dr-brand"><em>●</em> 동향 수집하는 호랑이 · TREND REPORT {datetime.now().year}</div>
+  <div class="dr-title">게임 커뮤니티 <b>동향 분석</b></div>
+  <div class="dr-sub">{datetime.now().strftime('%Y년 %m월 %d일')} 기준 · Claude AI 분석 · {len(platform_counts)}개 채널</div>
+  <div class="dr-pills">{pills_html}<span class="dr-pill-total">총 {total:,}건</span></div>
 </div>""", unsafe_allow_html=True)
 
-    # ── 전체 감성 지표 (3 대형 카드) ─────────────────────────
+    # ── 전체 감성 분포 ──────────────────────────────────────
+    st.markdown('<div class="sec-lbl">전체 감성 분포</div>', unsafe_allow_html=True)
     m1, m2, m3 = st.columns(3)
-    for col, pct, cnt, label, emoji, color, dark in [
-        (m1, pos_pct, pos, "긍정", "😊", "#4CAF50", "#2E7D32"),
-        (m2, neu_pct, neu, "중립", "😐", "#9E9E9E", "#616161"),
-        (m3, neg_pct, neg, "부정", "😠", "#F44336", "#C62828"),
+    for col, cnt, pct, label, color in [
+        (m1, neg, neg_pct, "부정", "#E53E3E"),
+        (m2, neu, neu_pct, "중립", "#4A5568"),
+        (m3, pos, pos_pct, "긍정", "#38A169"),
     ]:
         with col:
             st.markdown(f"""
-<div style="background:white;border-radius:14px;padding:20px;
-            box-shadow:0 3px 14px rgba(0,0,0,0.08);
-            border-top:4px solid {color};text-align:center;margin-bottom:8px">
-  <div style="font-size:2.2rem;font-weight:800;color:{dark}">{pct}%</div>
-  <div style="font-size:0.82rem;color:#888;margin-top:2px">{emoji} {label}</div>
-  <div style="font-size:0.78rem;color:#bbb;margin-top:4px">{cnt:,}건</div>
+<div class="met-card">
+  <div class="met-num" style="color:{color}">{cnt:,}</div>
+  <div class="met-pct">{label} · 전체의 {pct}%</div>
+  <div class="met-bar" style="background:{color};width:{pct}%"></div>
 </div>""", unsafe_allow_html=True)
 
-    # 전체 감성 % 바
     st.markdown(f"""
-<div style="display:flex;height:10px;border-radius:6px;overflow:hidden;margin:4px 0 6px">
-  <div style="width:{pos_pct}%;background:#4CAF50"></div>
-  <div style="width:{neu_pct}%;background:#BDBDBD"></div>
-  <div style="width:{neg_pct}%;background:#F44336"></div>
+<div class="sent-total-bar">
+  <div style="width:{neg_pct}%;background:#E53E3E"></div>
+  <div style="width:{neu_pct}%;background:#4A5568"></div>
+  <div style="width:{pos_pct}%;background:#38A169"></div>
 </div>
-<div class="sent-lbl-row">
-  <span style="color:#2E7D32">😊 긍정 {pos_pct}%</span>
-  <span style="color:#616161">😐 중립 {neu_pct}%</span>
-  <span style="color:#C62828">😠 부정 {neg_pct}%</span>
+<div class="sent-lbl-row2">
+  <span style="color:#E53E3E">부정 {neg_pct}%</span>
+  <span style="color:#4A5568">중립 {neu_pct}%</span>
+  <span style="color:#38A169">긍정 {pos_pct}%</span>
 </div>""", unsafe_allow_html=True)
 
-    st.markdown('<hr class="rpt-divider">', unsafe_allow_html=True)
+    # ── 채널별 감성 비교 ──────────────────────────────────────
+    if len(plat_sent) > 1:
+        st.markdown('<div class="sec-lbl">채널별 감성 비교</div>', unsafe_allow_html=True)
+        ch_html = '<div style="background:#1C1C1E;border-radius:12px;padding:14px 18px">'
+        for plat, ps in plat_sent.items():
+            ch_html += f"""
+<div class="ch-row">
+  <div class="ch-name">{plat}</div>
+  <div class="ch-sub">{ps['count']:,}건</div>
+  <div>
+    <div class="ch-bar-row">
+      <span class="ch-bar-lbl" style="color:#E53E3E">부정</span>
+      <div class="ch-bar-bg"><div class="ch-bar-fill" style="width:{ps['neg_pct']}%;background:#E53E3E"></div></div>
+      <span class="ch-bar-pct">{ps['neg_pct']}%</span>
+    </div>
+    <div class="ch-bar-row">
+      <span class="ch-bar-lbl" style="color:#718096">중립</span>
+      <div class="ch-bar-bg"><div class="ch-bar-fill" style="width:{ps['neu_pct']}%;background:#4A5568"></div></div>
+      <span class="ch-bar-pct">{ps['neu_pct']}%</span>
+    </div>
+    <div class="ch-bar-row">
+      <span class="ch-bar-lbl" style="color:#38A169">긍정</span>
+      <div class="ch-bar-bg"><div class="ch-bar-fill" style="width:{ps['pos_pct']}%;background:#38A169"></div></div>
+      <span class="ch-bar-pct">{ps['pos_pct']}%</span>
+    </div>
+  </div>
+</div>"""
+        ch_html += '</div>'
+        st.markdown(ch_html, unsafe_allow_html=True)
 
     # ── 종합 요약 ────────────────────────────────────────────
     if insights.get("summary"):
-        st.markdown(
-            f'<div class="summary-box">📋 <b>종합 동향 요약</b><br><br>{insights["summary"]}</div>',
-            unsafe_allow_html=True
-        )
-        st.markdown("<div style='height:14px'></div>", unsafe_allow_html=True)
+        st.markdown('<div class="sec-lbl">종합 동향 요약</div>', unsafe_allow_html=True)
+        st.markdown(f'<div class="sum-box">{insights["summary"]}</div>', unsafe_allow_html=True)
 
-    # ── 인사이트 카드 ────────────────────────────────────────
-    st.markdown('<div class="sec-title">💡 핵심 인사이트</div>', unsafe_allow_html=True)
+    # ── 주요 동향 요약 (테마, 감성별 그룹) ──────────────────
+    if theme_stats:
+        def _dominant(p, n, g):
+            return max([("긍정", p), ("중립", n), ("부정", g)], key=lambda x: x[1])[0]
+
+        groups: dict = {"부정": [], "중립": [], "긍정": []}
+        for stat in theme_stats:
+            theme_obj = next((t for t in unified_themes if t.get("name") == stat["name"]), {})
+            dom = _dominant(stat["pos"], stat["neu"], stat["neg"])
+            groups[dom].append((stat, theme_obj))
+
+        st.markdown('<div class="sec-lbl">주요 동향 요약</div>', unsafe_allow_html=True)
+        theme_html = '<div style="background:#1C1C1E;border-radius:12px;padding:14px 18px">'
+        for sent_label, pill_cls in [("부정", "pill-neg"), ("긍정", "pill-pos"), ("중립", "pill-neu")]:
+            grp = groups[sent_label]
+            if not grp:
+                continue
+            rows = ""
+            for stat, theme_obj in grp:
+                desc     = theme_obj.get("desc", "")
+                examples = [ex for ex in stat.get("examples", []) if ex]
+                ex_text  = "  ".join(f'"{ex}"' for ex in examples[:2])
+                combined = f"{desc} {ex_text}".strip()
+                rows += f"""
+<div class="th-row">
+  <div class="th-name">{stat['name']}</div>
+  <div class="th-desc">{combined}</div>
+</div>"""
+            theme_html += f"""
+<div style="margin-bottom:20px">
+  <span class="{pill_cls}">{sent_label} · {len(grp)}개 이슈</span>
+  {rows}
+</div>"""
+        theme_html += '</div>'
+        st.markdown(theme_html, unsafe_allow_html=True)
+
+    # ── 핵심 인사이트 ────────────────────────────────────────
     cards = insights.get("cards", [])
     if not insights:
         st.warning("인사이트 생성에 실패했습니다. 분석 로그를 확인하세요.", icon="⚠️")
@@ -380,135 +435,33 @@ def _render_dashboard(ar: dict):
         if _err:
             st.caption("\n".join(_err[-3:]))
     elif cards:
-        for i in range(0, len(cards), 2):
-            pair = cards[i:i+2]
-            cols = st.columns(len(pair))
-            for col, card in zip(cols, pair):
-                sent  = card.get("sentiment", "혼재")
-                color = _SENT_COLOR.get(sent, "#9E9E9E")
-                emoji = _SENT_EMOJI.get(sent, "😐")
-                with col:
-                    st.markdown(f"""
-<div class="insight-card" style="border-left-color:{color}">
-  <div class="card-title">{card.get('title','')}</div>
-  <div class="card-badge" style="background:{color}">{emoji} {sent}</div>
-  <div class="card-insight">{card.get('insight','')}</div>
-  <div class="card-evidence">💬 {card.get('evidence','')}</div>
-  <div class="card-action">➡ {card.get('action','')}</div>
-</div>""", unsafe_allow_html=True)
+        st.markdown('<div class="sec-lbl">핵심 인사이트</div>', unsafe_allow_html=True)
+        ins_html = '<div style="background:#1C1C1E;border-radius:12px;padding:12px 18px">'
+        for i, card in enumerate(cards, 1):
+            ins_html += f"""
+<div class="ins-card">
+  <div class="ins-num">{i:02d}</div>
+  <div class="ins-body">
+    <div class="ins-title">{card.get('title','')}</div>
+    <div class="ins-text">{card.get('insight','')}</div>
+    {f'<div class="ins-action">➡ {card["action"]}</div>' if card.get('action') else ''}
+  </div>
+</div>"""
+        ins_html += '</div>'
+        st.markdown(ins_html, unsafe_allow_html=True)
     elif insights:
         st.info("인사이트 카드 데이터가 없습니다. 분석을 다시 실행해 보세요.")
 
-    # ── 주요 테마 분석 ────────────────────────────────────────
-    if theme_stats:
-        st.markdown('<hr class="rpt-divider">', unsafe_allow_html=True)
-        total_theme = sum(s["count"] for s in theme_stats) or 1
-        max_share   = max(round(s["count"] / total_theme * 100) for s in theme_stats) or 1
-
-        _SENT_C = {"긍정": "#4CAF50", "중립": "#9E9E9E", "부정": "#F44336"}
-        _SENT_E = {"긍정": "😊", "중립": "😐", "부정": "😠"}
-
-        def _dominant(p, n, g):
-            return max([("긍정", p), ("중립", n), ("부정", g)], key=lambda x: x[1])[0]
-
-        st.markdown(
-            f'<div class="sec-title">🏷 주요 테마 분석 '
-            f'<span style="font-size:0.78rem;color:#aaa;font-weight:400">'
-            f'{len(theme_stats)}개 테마 발굴</span></div>',
-            unsafe_allow_html=True
-        )
-
-        # ① 순위 개요 바
-        rank_rows = ""
-        for rank, stat in enumerate(theme_stats, 1):
-            share_pct = round(stat["count"] / total_theme * 100)
-            bar_w     = round(share_pct / max_share * 100)
-            dom       = _dominant(stat["pos"], stat["neu"], stat["neg"])
-            rank_rows += f"""
-<div style="display:flex;align-items:center;gap:12px;padding:9px 0;
-            border-bottom:1px solid #F5F5F5">
-  <div style="width:24px;height:24px;border-radius:50%;background:#E8720C;color:white;
-              font-size:0.73rem;font-weight:700;display:flex;align-items:center;
-              justify-content:center;flex-shrink:0">{rank}</div>
-  <div style="min-width:130px;max-width:220px;font-size:0.84rem;font-weight:600;
-              color:#222;flex-shrink:0;word-break:keep-all;line-height:1.4">{stat['name']}</div>
-  <div style="flex:1;background:#EFEFEF;border-radius:4px;height:9px;overflow:hidden">
-    <div style="width:{bar_w}%;height:100%;background:{_SENT_C[dom]};border-radius:4px"></div>
-  </div>
-  <div style="width:36px;font-size:0.84rem;font-weight:700;color:#333;
-              text-align:right;flex-shrink:0">{share_pct}%</div>
-  <div style="width:70px;font-size:0.74rem;color:#888;flex-shrink:0;text-align:right">
-    {_SENT_E[dom]} {dom} 우세</div>
-</div>"""
-
-        st.markdown(f"""
-<div class="theme-card">
-  <div style="font-size:0.78rem;color:#aaa;font-weight:600;letter-spacing:0.3px;margin-bottom:6px">
-    전체 언급 비중 순위 (비중 높은 순)</div>
-  {rank_rows}
-</div>""", unsafe_allow_html=True)
-
-        # ② 테마별 상세 카드 (1열, 인용 최대)
-        st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
-        for rank, stat in enumerate(theme_stats, 1):
-            theme_obj = next(
-                (t for t in unified_themes if t.get("name") == stat["name"]), {}
-            )
-            desc      = theme_obj.get("desc", "")
-            share_pct = round(stat["count"] / total_theme * 100)
-            p, n, g   = stat["pos"], stat["neu"], stat["neg"]
-            dom       = _dominant(p, n, g)
-            examples  = [ex for ex in stat.get("examples", []) if ex]
-            ex_html   = "".join(
-                f'<div class="theme-ex">"{ex}"</div>' for ex in examples
-            )
-            st.markdown(f"""
-<div class="theme-card">
-  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-    <div style="display:flex;align-items:center;gap:10px">
-      <div style="width:26px;height:26px;border-radius:50%;background:#E8720C;color:white;
-                  font-size:0.78rem;font-weight:700;display:flex;align-items:center;
-                  justify-content:center;flex-shrink:0">{rank}</div>
-      <span class="theme-name">{stat['name']}</span>
-    </div>
-    <div style="display:flex;gap:7px;align-items:center">
-      <span style="background:{_SENT_C[dom]};color:white;border-radius:10px;
-                   padding:2px 10px;font-size:0.70rem;font-weight:700">
-        {_SENT_E[dom]} {dom} 우세</span>
-      <span class="theme-badge">비중 {share_pct}%</span>
-    </div>
-  </div>
-  {f'<div class="theme-desc">{desc}</div>' if desc else ''}
-  <div style="display:flex;height:10px;border-radius:5px;overflow:hidden;margin-bottom:6px">
-    <div style="width:{p}%;background:#4CAF50"></div>
-    <div style="width:{n}%;background:#BDBDBD"></div>
-    <div style="width:{g}%;background:#F44336"></div>
-  </div>
-  <div class="sent-lbl-row" style="margin-bottom:{('10px' if ex_html else '0')}">
-    <span style="color:#2E7D32">😊 긍정 {p}%</span>
-    <span style="color:#616161">😐 중립 {n}%</span>
-    <span style="color:#C62828">😠 부정 {g}%</span>
-  </div>
-  {f'<div style="font-size:0.76rem;color:#bbb;font-weight:600;letter-spacing:0.2px;margin-bottom:4px">💬 대표 인용</div>{ex_html}' if ex_html else ''}
-</div>""", unsafe_allow_html=True)
-
-    # ── 플랫폼별 감성 (복수 플랫폼일 때만) ───────────────────
-    if len(platform_counts) > 1:
-        st.markdown('<hr class="rpt-divider">', unsafe_allow_html=True)
-        st.markdown('<div class="sec-title">📡 플랫폼별 감성 분포</div>', unsafe_allow_html=True)
-        st.plotly_chart(sentiment_by_platform(items_by_plat),
-                        use_container_width=True, key="chart_platform")
-
 
 def _build_cardnews_html(ar: dict, label: str) -> str:
-    """분석 결과 → 완결된 리포트 HTML 반환 (인사이트 카드 + 테마 분석 포함)"""
+    """분석 결과 → 다크 테마 리포트 HTML 반환"""
     ins            = ar.get("insights", {})
     unified_themes = ar.get("unified_themes", [])
     items_by_plat  = ar.get("platform_items", {})
     theme_stats    = _aggregate_theme_stats(unified_themes, items_by_plat)
 
     b64  = _tiger_b64()
-    logo = f'<img src="data:image/png;base64,{b64}" style="height:52px">' if b64 else "🐯"
+    logo = f'<img src="data:image/png;base64,{b64}" style="height:44px">' if b64 else "🐯"
 
     # 전체 감성 집계
     pos = neu = neg = 0
@@ -525,207 +478,191 @@ def _build_cardnews_html(ar: dict, label: str) -> str:
 
     # 플랫폼 pills
     plat_pills = "".join(
-        f'<span style="background:rgba(255,255,255,0.18);border-radius:16px;'
-        f'padding:3px 11px;font-size:0.73rem;color:rgba(255,255,255,0.85)">'
-        f'{p} {len(v):,}건</span>'
+        f'<span style="background:#2A2A2A;border-radius:4px;padding:3px 10px;'
+        f'font-size:0.7rem;color:#888">{p} {len(v):,}건</span>'
         for p, v in items_by_plat.items() if v
     )
 
     # 인사이트 카드 HTML
-    cards_html = ""
-    for card in ins.get("cards", []):
-        sent  = card.get("sentiment", "혼재")
-        color = _SENT_COLOR.get(sent, "#9E9E9E")
-        emoji = _SENT_EMOJI.get(sent, "😐")
-        cards_html += f"""
-<div style="background:#fff;border-radius:13px;padding:17px 19px;
-            box-shadow:0 2px 10px rgba(0,0,0,0.07);border-left:5px solid {color}">
-  <div style="font-size:0.97rem;font-weight:700;margin-bottom:7px;color:#111">{card.get('title','')}</div>
-  <div style="display:inline-block;padding:2px 11px;border-radius:20px;
-              font-size:0.73rem;font-weight:600;color:#fff;background:{color};
-              margin-bottom:10px">{emoji} {sent}</div>
-  <div style="font-size:0.87rem;color:#333;line-height:1.65;margin-bottom:8px">{card.get('insight','')}</div>
-  <div style="font-size:0.79rem;color:#555;padding:7px 11px;background:#F8F9FA;
-              border-radius:7px;border-left:3px solid #ddd;margin-bottom:7px">💬 {card.get('evidence','')}</div>
-  <div style="font-size:0.80rem;color:#1565C0;font-weight:600;padding:5px 9px;
-              background:#EEF5FF;border-radius:6px">➡ {card.get('action','')}</div>
-</div>"""
-
-    # 테마 섹션 HTML (순위 개요 + 상세 카드)
-    _SC = {"긍정": "#4CAF50", "중립": "#9E9E9E", "부정": "#F44336"}
-    _SE = {"긍정": "😊", "중립": "😐", "부정": "😠"}
     def _dom(p, n, g):
         return max([("긍정", p), ("중립", n), ("부정", g)], key=lambda x: x[1])[0]
 
-    total_theme = sum(s["count"] for s in theme_stats) or 1
-    max_share   = max(round(s["count"] / total_theme * 100) for s in theme_stats) or 1
+    ins_rows = ""
+    for i, card in enumerate(ins.get("cards", []), 1):
+        action_h = f'<div style="font-size:0.8rem;color:#E8720C;margin-top:6px">➡ {card["action"]}</div>' if card.get("action") else ""
+        ins_rows += f"""
+<div style="display:flex;gap:16px;padding:14px 0;border-bottom:1px solid #2A2A2A;align-items:flex-start">
+  <div style="background:#9B2C2C;color:white;font-size:0.7rem;font-weight:800;
+              width:26px;height:26px;border-radius:4px;display:flex;align-items:center;
+              justify-content:center;flex-shrink:0;font-family:monospace">{i:02d}</div>
+  <div>
+    <div style="font-size:0.9rem;font-weight:700;color:#E0E0E0;margin-bottom:5px">{card.get('title','')}</div>
+    <div style="font-size:0.83rem;color:#999;line-height:1.65">{card.get('insight','')}</div>
+    {action_h}
+  </div>
+</div>"""
 
-    # 순위 개요 바 (HTML)
-    rank_rows_html = ""
-    for rank, stat in enumerate(theme_stats, 1):
-        share_pct = round(stat["count"] / total_theme * 100)
-        bar_w     = round(share_pct / max_share * 100)
-        dom       = _dom(stat["pos"], stat["neu"], stat["neg"])
-        rank_rows_html += (
-            f'<div style="display:flex;align-items:center;gap:10px;padding:8px 0;'
-            f'border-bottom:1px solid #F5F5F5">'
-            f'<div style="width:22px;height:22px;border-radius:50%;background:#E8720C;'
-            f'color:white;font-size:0.70rem;font-weight:700;display:flex;align-items:center;'
-            f'justify-content:center;flex-shrink:0">{rank}</div>'
-            f'<div style="min-width:130px;max-width:220px;font-size:0.83rem;font-weight:600;'
-            f'color:#222;flex-shrink:0;word-break:keep-all;line-height:1.4">'
-            f'{stat["name"]}</div>'
-            f'<div style="flex:1;background:#EFEFEF;border-radius:4px;height:8px;overflow:hidden">'
-            f'<div style="width:{bar_w}%;height:100%;background:{_SC[dom]};border-radius:4px"></div>'
-            f'</div>'
-            f'<div style="width:34px;font-size:0.82rem;font-weight:700;color:#333;'
-            f'text-align:right;flex-shrink:0">{share_pct}%</div>'
-            f'<div style="width:72px;font-size:0.73rem;color:#888;flex-shrink:0;text-align:right">'
-            f'{_SE[dom]} {dom} 우세</div>'
-            f'</div>'
-        )
+    ins_section = f"""
+<div style="font-size:0.67rem;color:#555;letter-spacing:0.8px;text-transform:uppercase;font-weight:600;
+            padding-bottom:8px;border-bottom:1px solid #2A2A2A;margin-bottom:0">핵심 인사이트</div>
+<div style="background:#1C1C1E;border-radius:12px;padding:12px 18px;margin-bottom:24px">{ins_rows}</div>
+""" if ins_rows else ""
 
-    # 상세 카드 (HTML)
-    detail_cards_html = ""
-    for rank, stat in enumerate(theme_stats, 1):
-        theme_obj = next((t for t in unified_themes if t.get("name") == stat["name"]), {})
-        desc      = theme_obj.get("desc", "")
-        share_pct = round(stat["count"] / total_theme * 100)
-        p, n, g   = stat["pos"], stat["neu"], stat["neg"]
-        dom       = _dom(p, n, g)
-        examples  = [ex for ex in stat.get("examples", []) if ex]
-        ex_items  = "".join(
-            f'<div style="font-size:0.78rem;color:#444;background:#FFF8F3;'
-            f'border-left:3px solid #E8720C;border-radius:0 5px 5px 0;'
-            f'padding:5px 9px;margin-top:5px">"{ex}"</div>'
-            for ex in examples
-        )
-        detail_cards_html += (
-            f'<div style="background:#fff;border-radius:13px;padding:18px 20px;'
-            f'box-shadow:0 2px 10px rgba(0,0,0,0.07);margin-bottom:12px">'
-            f'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
-            f'<div style="display:flex;align-items:center;gap:10px">'
-            f'<div style="width:26px;height:26px;border-radius:50%;background:#E8720C;color:white;'
-            f'font-size:0.76rem;font-weight:700;display:flex;align-items:center;'
-            f'justify-content:center;flex-shrink:0">{rank}</div>'
-            f'<span style="font-size:0.96rem;font-weight:700;color:#111">{stat["name"]}</span>'
-            f'</div>'
-            f'<div style="display:flex;gap:7px;align-items:center">'
-            f'<span style="background:{_SC[dom]};color:white;border-radius:10px;'
-            f'padding:2px 10px;font-size:0.69rem;font-weight:700">{_SE[dom]} {dom} 우세</span>'
-            f'<span style="background:#F0F4FF;color:#3F51B5;border-radius:12px;'
-            f'padding:2px 9px;font-size:0.69rem;font-weight:700">비중 {share_pct}%</span>'
-            f'</div></div>'
-            + (f'<div style="font-size:0.80rem;color:#666;margin-bottom:10px;line-height:1.5">{desc}</div>' if desc else '')
-            + f'<div style="display:flex;height:9px;border-radius:5px;overflow:hidden;margin-bottom:5px">'
-            f'<div style="width:{p}%;background:#4CAF50"></div>'
-            f'<div style="width:{n}%;background:#BDBDBD"></div>'
-            f'<div style="width:{g}%;background:#F44336"></div>'
-            f'</div>'
-            f'<div style="display:flex;gap:14px;font-size:0.72rem;margin-bottom:{("10px" if ex_items else "0")}">'
-            f'<span style="color:#2E7D32">😊 긍정 {p}%</span>'
-            f'<span style="color:#616161">😐 중립 {n}%</span>'
-            f'<span style="color:#C62828">😠 부정 {g}%</span>'
-            f'</div>'
-            + (f'<div style="font-size:0.74rem;color:#bbb;font-weight:600;margin-bottom:4px">💬 대표 인용</div>{ex_items}' if ex_items else '')
-            + '</div>'
-        )
+    # 테마 섹션 HTML (감성별 그룹)
+    theme_section = ""
+    if theme_stats:
+        groups: dict = {"부정": [], "중립": [], "긍정": []}
+        for stat in theme_stats:
+            theme_obj = next((t for t in unified_themes if t.get("name") == stat["name"]), {})
+            dom = _dom(stat["pos"], stat["neu"], stat["neg"])
+            groups[dom].append((stat, theme_obj))
 
-    summary_html = (
-        f'<div style="background:linear-gradient(135deg,#E8F4FD 0%,#EDE7F6 100%);'
-        f'border-radius:13px;padding:17px 21px;margin-bottom:24px;'
-        f'font-size:0.92rem;color:#1A237E;line-height:1.75;'
-        f'border-left:5px solid #3F51B5">'
-        f'📋 <b>종합 동향 요약</b><br><br>{ins["summary"]}</div>'
-        if ins.get("summary") else ""
-    )
+        pill_styles = {
+            "부정": "background:#9B2C2C;color:white",
+            "긍정": "background:#276749;color:white",
+            "중립": "background:#2D3748;color:white",
+        }
+        grp_html = ""
+        for sent_label in ["부정", "긍정", "중립"]:
+            grp = groups[sent_label]
+            if not grp: continue
+            rows = ""
+            for stat, theme_obj in grp:
+                desc     = theme_obj.get("desc", "")
+                examples = [ex for ex in stat.get("examples", []) if ex]
+                ex_text  = "  ".join(f'"{ex}"' for ex in examples[:2])
+                combined = f"{desc} {ex_text}".strip()
+                rows += f"""
+<div style="display:flex;gap:20px;padding:10px 0;border-bottom:1px solid #2A2A2A">
+  <div style="font-size:0.84rem;font-weight:700;color:#E0E0E0;min-width:110px;max-width:140px;
+              flex-shrink:0;line-height:1.4;word-break:keep-all">{stat['name']}</div>
+  <div style="font-size:0.81rem;color:#999;line-height:1.6">{combined}</div>
+</div>"""
+            grp_html += f"""
+<div style="margin-bottom:20px">
+  <span style="{pill_styles[sent_label]};border-radius:6px;padding:5px 14px;
+               font-size:0.8rem;font-weight:700;display:inline-block;margin-bottom:8px">
+    {sent_label} · {len(grp)}개 이슈</span>
+  {rows}
+</div>"""
 
-    theme_section = (
-        f'<div style="margin-bottom:28px">'
-        f'<div style="font-size:1rem;font-weight:700;color:#222;margin-bottom:14px;'
-        f'padding-bottom:8px;border-bottom:2px solid #F0F0F0">'
-        f'🏷 주요 테마 분석 <span style="font-size:0.78rem;color:#aaa;font-weight:400">'
-        f'{len(theme_stats)}개 테마 발굴</span></div>'
-        f'<div style="background:#fff;border-radius:13px;padding:16px 18px;'
-        f'box-shadow:0 2px 10px rgba(0,0,0,0.07);margin-bottom:14px">'
-        f'<div style="font-size:0.76rem;color:#aaa;font-weight:600;letter-spacing:0.3px;margin-bottom:6px">'
-        f'전체 언급 비중 순위</div>'
-        f'{rank_rows_html}</div>'
-        f'{detail_cards_html}'
-        f'</div>'
-    ) if theme_stats else ""
+        theme_section = f"""
+<div style="font-size:0.67rem;color:#555;letter-spacing:0.8px;text-transform:uppercase;font-weight:600;
+            padding-bottom:8px;border-bottom:1px solid #2A2A2A;margin-bottom:0">주요 동향 요약</div>
+<div style="background:#1C1C1E;border-radius:12px;padding:14px 18px;margin-bottom:24px">{grp_html}</div>"""
+
+    # 채널별 감성 바
+    plat_sent_cn = {}
+    for plat, items_list in items_by_plat.items():
+        if not items_list: continue
+        pp = sum(1 for i in items_list if i.get("sentiment") == "긍정")
+        pn = sum(1 for i in items_list if i.get("sentiment") == "중립")
+        pg = sum(1 for i in items_list if i.get("sentiment") == "부정")
+        pt = pp + pn + pg or 1
+        plat_sent_cn[plat] = {"count": pt, "pos_pct": round(pp/pt*100), "neu_pct": round(pn/pt*100), "neg_pct": round(pg/pt*100)}
+
+    ch_section = ""
+    if len(plat_sent_cn) > 1:
+        ch_rows = ""
+        for plat, ps in plat_sent_cn.items():
+            ch_rows += f"""
+<div style="padding:12px 0;border-bottom:1px solid #2A2A2A">
+  <div style="font-size:0.85rem;font-weight:700;color:#E0E0E0">{plat}</div>
+  <div style="font-size:0.69rem;color:#555;margin-bottom:8px">{ps['count']:,}건</div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+    <span style="font-size:0.67rem;color:#E53E3E;width:22px">부정</span>
+    <div style="flex:1;background:#2A2A2A;border-radius:3px;height:6px">
+      <div style="width:{ps['neg_pct']}%;background:#E53E3E;height:6px;border-radius:3px"></div></div>
+    <span style="font-size:0.67rem;color:#666;width:28px;text-align:right">{ps['neg_pct']}%</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+    <span style="font-size:0.67rem;color:#718096;width:22px">중립</span>
+    <div style="flex:1;background:#2A2A2A;border-radius:3px;height:6px">
+      <div style="width:{ps['neu_pct']}%;background:#4A5568;height:6px;border-radius:3px"></div></div>
+    <span style="font-size:0.67rem;color:#666;width:28px;text-align:right">{ps['neu_pct']}%</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px">
+    <span style="font-size:0.67rem;color:#38A169;width:22px">긍정</span>
+    <div style="flex:1;background:#2A2A2A;border-radius:3px;height:6px">
+      <div style="width:{ps['pos_pct']}%;background:#38A169;height:6px;border-radius:3px"></div></div>
+    <span style="font-size:0.67rem;color:#666;width:28px;text-align:right">{ps['pos_pct']}%</span>
+  </div>
+</div>"""
+        ch_section = f"""
+<div style="font-size:0.67rem;color:#555;letter-spacing:0.8px;text-transform:uppercase;font-weight:600;
+            padding-bottom:8px;border-bottom:1px solid #2A2A2A;margin-bottom:0">채널별 감성 비교</div>
+<div style="background:#1C1C1E;border-radius:12px;padding:14px 18px;margin-bottom:24px">{ch_rows}</div>"""
+
+    summary_html = f"""
+<div style="font-size:0.67rem;color:#555;letter-spacing:0.8px;text-transform:uppercase;font-weight:600;
+            padding-bottom:8px;border-bottom:1px solid #2A2A2A;margin-bottom:12px">종합 동향 요약</div>
+<div style="background:#242424;border-left:4px solid #E8720C;border-radius:0 8px 8px 0;
+            padding:16px 18px;font-size:0.87rem;color:#CCC;line-height:1.75;margin-bottom:24px">{ins["summary"]}</div>
+""" if ins.get("summary") else ""
 
     return f"""<!DOCTYPE html>
 <html lang="ko"><head><meta charset="UTF-8">
 <title>{label} 게임 동향 분석 리포트</title>
 <style>
-* {{ box-sizing: border-box; margin: 0; padding: 0; }}
-body {{ font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
-        background: #F4F6FA; color: #222; padding: 32px; max-width: 960px; margin: 0 auto; }}
-@media print {{ body {{ padding: 16px; background: white; }} }}
+* {{ box-sizing:border-box; margin:0; padding:0; }}
+body {{ font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+        background:#141416; color:#E8E8E8; padding:36px; max-width:960px; margin:0 auto; }}
+@media print {{ body {{ background:#141416; padding:16px; }} }}
 </style></head><body>
 
-<div style="background:linear-gradient(135deg,#0F2027 0%,#203A43 60%,#2C5364 100%);
-            border-radius:16px;padding:22px 26px;margin-bottom:22px;color:white">
-  <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+<div style="background:#1C1C1E;border-radius:14px;padding:24px 28px;margin-bottom:24px">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
     {logo}
     <div>
-      <div style="font-size:1.35rem;font-weight:800;letter-spacing:0.3px">🐯 {label} 게임 동향 분석 리포트</div>
-      <div style="font-size:0.77rem;color:rgba(255,255,255,0.55);margin-top:4px">{datetime.now().strftime('%Y년 %m월 %d일')} 기준 · Claude AI 분석</div>
+      <div style="font-size:0.67rem;color:#555;letter-spacing:1px">● 동향 수집하는 호랑이 · TREND REPORT {datetime.now().year}</div>
+      <div style="font-size:1.7rem;font-weight:900;color:#FFFFFF;margin-top:4px;line-height:1.15">
+        {label} <span style="color:#E8720C">동향 분석</span></div>
+      <div style="font-size:0.74rem;color:#666;margin-top:5px">{datetime.now().strftime('%Y년 %m월 %d일')} 기준 · Claude AI 분석</div>
     </div>
   </div>
-  <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+  <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:10px">
     {plat_pills}
-    <span style="background:#E8720C;border-radius:16px;padding:3px 13px;
-                 font-size:0.73rem;font-weight:700;color:white">총 {total:,}건</span>
+    <span style="background:#E8720C;border-radius:4px;padding:3px 10px;font-size:0.7rem;font-weight:700;color:white">총 {total:,}건</span>
   </div>
 </div>
 
-<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px">
-  <div style="background:white;border-radius:13px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.07);
-              border-top:4px solid #4CAF50;text-align:center">
-    <div style="font-size:2rem;font-weight:800;color:#2E7D32">{pos_pct}%</div>
-    <div style="font-size:0.79rem;color:#888;margin-top:3px">😊 긍정</div>
-    <div style="font-size:0.76rem;color:#bbb;margin-top:3px">{pos:,}건</div>
+<div style="font-size:0.67rem;color:#555;letter-spacing:0.8px;text-transform:uppercase;font-weight:600;
+            padding-bottom:8px;border-bottom:1px solid #2A2A2A;margin-bottom:12px">전체 감성 분포</div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">
+  <div style="background:#242424;border-radius:10px;padding:18px 16px">
+    <div style="font-size:2.6rem;font-weight:800;color:#E53E3E;line-height:1">{neg:,}</div>
+    <div style="font-size:0.72rem;color:#888;margin-top:5px">부정 · 전체의 {neg_pct}%</div>
+    <div style="height:3px;background:#E53E3E;border-radius:2px;margin-top:12px;width:{neg_pct}%"></div>
   </div>
-  <div style="background:white;border-radius:13px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.07);
-              border-top:4px solid #9E9E9E;text-align:center">
-    <div style="font-size:2rem;font-weight:800;color:#616161">{neu_pct}%</div>
-    <div style="font-size:0.79rem;color:#888;margin-top:3px">😐 중립</div>
-    <div style="font-size:0.76rem;color:#bbb;margin-top:3px">{neu:,}건</div>
+  <div style="background:#242424;border-radius:10px;padding:18px 16px">
+    <div style="font-size:2.6rem;font-weight:800;color:#4A5568;line-height:1">{neu:,}</div>
+    <div style="font-size:0.72rem;color:#888;margin-top:5px">중립 · 전체의 {neu_pct}%</div>
+    <div style="height:3px;background:#4A5568;border-radius:2px;margin-top:12px;width:{neu_pct}%"></div>
   </div>
-  <div style="background:white;border-radius:13px;padding:18px;box-shadow:0 2px 10px rgba(0,0,0,0.07);
-              border-top:4px solid #F44336;text-align:center">
-    <div style="font-size:2rem;font-weight:800;color:#C62828">{neg_pct}%</div>
-    <div style="font-size:0.79rem;color:#888;margin-top:3px">😠 부정</div>
-    <div style="font-size:0.76rem;color:#bbb;margin-top:3px">{neg:,}건</div>
+  <div style="background:#242424;border-radius:10px;padding:18px 16px">
+    <div style="font-size:2.6rem;font-weight:800;color:#38A169;line-height:1">{pos:,}</div>
+    <div style="font-size:0.72rem;color:#888;margin-top:5px">긍정 · 전체의 {pos_pct}%</div>
+    <div style="height:3px;background:#38A169;border-radius:2px;margin-top:12px;width:{pos_pct}%"></div>
   </div>
 </div>
-<div style="display:flex;height:10px;border-radius:6px;overflow:hidden;margin-bottom:6px">
-  <div style="width:{pos_pct}%;background:#4CAF50"></div>
-  <div style="width:{neu_pct}%;background:#BDBDBD"></div>
-  <div style="width:{neg_pct}%;background:#F44336"></div>
+<div style="display:flex;height:7px;border-radius:4px;overflow:hidden;margin-bottom:6px">
+  <div style="width:{neg_pct}%;background:#E53E3E"></div>
+  <div style="width:{neu_pct}%;background:#4A5568"></div>
+  <div style="width:{pos_pct}%;background:#38A169"></div>
 </div>
-<div style="display:flex;gap:16px;font-size:0.72rem;color:#888;margin-bottom:22px">
-  <span style="color:#2E7D32">😊 긍정 {pos_pct}%</span>
-  <span style="color:#616161">😐 중립 {neu_pct}%</span>
-  <span style="color:#C62828">😠 부정 {neg_pct}%</span>
+<div style="display:flex;gap:16px;font-size:0.69rem;margin-bottom:24px">
+  <span style="color:#E53E3E">부정 {neg_pct}%</span>
+  <span style="color:#4A5568">중립 {neu_pct}%</span>
+  <span style="color:#38A169">긍정 {pos_pct}%</span>
 </div>
 
+{ch_section}
 {summary_html}
-
-<div style="margin-bottom:28px">
-  <div style="font-size:1rem;font-weight:700;color:#222;margin-bottom:14px;
-              padding-bottom:8px;border-bottom:2px solid #F0F0F0">💡 핵심 인사이트</div>
-  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
-    {cards_html}
-  </div>
-</div>
-
 {theme_section}
+{ins_section}
 
-<div style="text-align:center;font-size:0.73rem;color:#bbb;margin-top:8px;padding-top:16px;
-            border-top:1px solid #eee">동향 수집하는 호랑이 · 내부용 자료</div>
+<div style="text-align:center;font-size:0.7rem;color:#333;margin-top:8px;padding-top:16px;border-top:1px solid #2A2A2A">
+  동향 수집하는 호랑이 · {_TEAM} · {_VERSION} · 내부용 자료</div>
 </body></html>"""
 
 
@@ -813,6 +750,9 @@ st.markdown(f"""
                 letter-spacing:-0.5px">동향 수집하는 호랑이</div>
     <div style="font-size:1rem;color:#999;margin-top:8px">
       게임 커뮤니티 반응을 플랫폼별로 수집하고 Claude AI로 분석합니다
+    </div>
+    <div style="font-size:0.72rem;color:#ccc;margin-top:6px;letter-spacing:0.3px">
+      {_TEAM} &nbsp;·&nbsp; {_VERSION}
     </div>
   </div>
 </div>
@@ -1580,3 +1520,12 @@ body {{ font-family:'Malgun Gothic',sans-serif; background:#F8F9FA; color:#222; 
 
     st.session_state.live_cardnews_html = lv_html
     st.rerun()
+
+# ─── 페이지 푸터 ──────────────────────────────────────────────
+st.markdown(
+    f'<div style="text-align:center;color:#bbb;font-size:0.72rem;'
+    f'padding:32px 0 12px;letter-spacing:0.3px">'
+    f'{_TEAM} &nbsp;·&nbsp; 동향 수집하는 호랑이 &nbsp;·&nbsp; {_VERSION}'
+    f'</div>',
+    unsafe_allow_html=True
+)
