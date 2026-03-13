@@ -748,10 +748,10 @@ st.markdown(f"""
   <div style="flex:1">
     <div style="font-size:2.4rem;font-weight:900;color:#E8720C;line-height:1.15;
                 letter-spacing:-0.5px">동향 수집하는 호랑이</div>
-    <div style="font-size:1rem;color:#C0C0C0;margin-top:8px">
+    <div style="font-size:1rem;color:#333333;margin-top:8px">
       게임 커뮤니티 반응을 플랫폼별로 수집하고 Claude AI로 분석합니다
     </div>
-    <div style="font-size:0.72rem;color:#DDDDDD;margin-top:6px;letter-spacing:0.3px">
+    <div style="font-size:0.72rem;color:#555555;margin-top:6px;letter-spacing:0.3px">
       {_TEAM} &nbsp;·&nbsp; {_VERSION}
     </div>
   </div>
