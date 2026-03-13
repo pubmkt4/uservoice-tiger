@@ -267,7 +267,7 @@ def map_themes(client, items: list, text_key: str, themes: list,
         )
         try:
             resp = client.messages.create(
-                model=HAIKU, max_tokens=800,
+                model=HAIKU, max_tokens=1500,
                 messages=[{"role": "user", "content": prompt}]
             )
             result = _parse_json(resp.content[0].text)
@@ -276,7 +276,15 @@ def map_themes(client, items: list, text_key: str, themes: list,
                     idx = r.get("id", 0) - 1
                     if 0 <= idx < len(batch):
                         theme = r.get("theme", "기타")
-                        batch[idx]["theme"] = theme if theme in theme_names else "기타"
+                        # 정확히 일치하지 않으면 가장 유사한 테마명으로 매핑
+                        if theme not in theme_names:
+                            matched = next(
+                                (tn for tn in theme_names if tn in theme or theme in tn), "기타"
+                            )
+                            theme = matched
+                        batch[idx]["theme"] = theme
+            elif log_fn:
+                log_fn(f"  ⚠️ 테마 매핑 배치 {batch_num} JSON 파싱 실패")
         except Exception as e:
             if log_fn:
                 log_fn(f"  ⚠️ 테마 매핑 배치 오류: {e}")
@@ -301,8 +309,9 @@ def generate_insights(client, keyword: str, unified_themes: list,
                 1 for items in items_by_platform.values()
                 for item in items if item.get("theme")
             )
-            log_fn(f"  ⚠️ 인사이트 생성 불가: 통합 테마 {theme_count}개, 전체 항목 {item_count}건 중 테마 매핑된 항목 {themed_count}건")
-        return {}
+            log_fn(f"  ⚠️ 테마 매핑 데이터 부족 ({themed_count}/{item_count}건). 원본 데이터로 인사이트 생성 시도...")
+        # 폴백: 테마 통계 없이 원본 텍스트 샘플로 인사이트 생성
+        return _generate_insights_fallback(client, keyword, unified_themes, items_by_platform, log_fn)
 
     stats_text = ""
     for s in stats:
@@ -565,3 +574,54 @@ def _aggregate_theme_stats(themes: list, items_by_platform: dict) -> list:
             })
 
     return sorted(stats, key=lambda x: x["count"], reverse=True)
+
+
+def _generate_insights_fallback(client, keyword: str, unified_themes: list,
+                                 items_by_platform: dict, log_fn=None) -> dict:
+    """테마 매핑 실패 시 원본 샘플 텍스트로 인사이트 직접 생성"""
+    all_items = []
+    for plat, items in items_by_platform.items():
+        for item in items:
+            text = _first_text(item)
+            sent = item.get("sentiment", "중립")
+            if text:
+                all_items.append(f"[{plat}/{sent}] {text[:150]}")
+
+    if not all_items:
+        return {}
+
+    sample = _sample(all_items, 150)
+    themes_text = "\n".join(
+        f"- {t.get('name')}: {t.get('desc', '')}" for t in unified_themes
+    ) if unified_themes else "테마 정보 없음"
+
+    prompt = (
+        f'다음은 게임 키워드 "{keyword}"에 대한 멀티플랫폼 커뮤니티 데이터 샘플입니다.\n'
+        f"게임 마케팅 담당자를 위한 인사이트 카드를 작성하세요.\n\n"
+        f"주요 동향 테마:\n{themes_text}\n\n"
+        f"데이터 샘플 ({len(sample)}건):\n" + "\n".join(f"- {s}" for s in sample) + "\n\n"
+        f"반드시 JSON만 출력하세요.\n"
+        f'형식:\n{{'
+        f'"summary": "전체 동향 요약 2~3문장",\n'
+        f'"cards": [\n'
+        f'  {{"title": "카드 제목", "sentiment": "긍정/부정/혼재",\n'
+        f'   "insight": "인사이트 2~3문장", "evidence": "대표 사례 또는 수치",\n'
+        f'   "action": "마케팅 관점 시사점 1문장"}}\n'
+        f"]}}"
+    )
+    try:
+        resp = client.messages.create(
+            model=SONNET, max_tokens=6000,
+            messages=[{"role": "user", "content": prompt}]
+        )
+        result = _parse_json(resp.content[0].text)
+        if isinstance(result, dict):
+            if log_fn:
+                log_fn(f"  ✅ 폴백 인사이트 카드 {len(result.get('cards', []))}개 생성 완료")
+            return result
+        if log_fn:
+            log_fn(f"  ⚠️ 폴백 인사이트 JSON 파싱 실패")
+    except Exception as e:
+        if log_fn:
+            log_fn(f"  ⚠️ 폴백 인사이트 생성 오류: {e}")
+    return {}
