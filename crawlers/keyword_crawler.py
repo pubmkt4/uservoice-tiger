@@ -717,10 +717,11 @@ class DCInsideCrawler:
     DELAY_BETWEEN_PAGES = (1.5, 3.5)
     DELAY_BETWEEN_POSTS = (1.0, 2.5)
 
-    def __init__(self, days_limit=7):
+    def __init__(self, days_limit=30):
         self.headers = dict(self.DEFAULT_HEADERS)
         self.cutoff_date = datetime.now() - timedelta(days=days_limit)
-    
+        self._blocked = False  # 연속 403 감지 시 True → 이후 요청 전부 즉시 중단
+
     def _parse_date(self, date_str):
         try:
             if '-' in date_str and len(date_str) >= 10:
@@ -732,14 +733,21 @@ class DCInsideCrawler:
             return datetime.now()
 
     def _request_with_retry(self, url, callback=None):
-        """403/차단 시 한 번 재시도 후 반환. IP 차단 완화용."""
+        """403 시 15초 대기 후 1회 재시도. 재시도도 403이면 IP 차단으로 간주하고 _blocked=True."""
+        if self._blocked:
+            return None
         try:
             resp = requests.get(url, headers=self.headers, verify=False, timeout=12)
             if resp.status_code == 403:
                 if callback:
-                    callback("  ⚠️ 디시 접근 제한(403) — 8초 대기 후 재시도")
-                time.sleep(random.uniform(8, 12))
+                    callback("  ⚠️ 디시 접근 제한(403) — 15초 대기 후 재시도")
+                time.sleep(random.uniform(15, 20))
                 resp = requests.get(url, headers=self.headers, verify=False, timeout=12)
+                if resp.status_code == 403:
+                    if callback:
+                        callback("  ⛔ 디시 IP 차단 확인 (연속 403) — 수집 즉시 중단")
+                    self._blocked = True
+                    return None
             return resp
         except Exception as e:
             if callback:
@@ -797,6 +805,8 @@ class DCInsideCrawler:
         results = []
         gallery_type = "mgallery/board" if is_minor else "board"
         for page in range(1, max_pages + 1):
+            if self._blocked:
+                break
             if page > 1:
                 delay = random.uniform(*self.DELAY_BETWEEN_PAGES)
                 time.sleep(delay)
@@ -854,6 +864,8 @@ class DCInsideCrawler:
     def crawl_search(self, keyword, max_pages=10, callback=None):
         results = []
         for page in range(1, max_pages + 1):
+            if self._blocked:
+                break
             if page > 1:
                 time.sleep(random.uniform(*self.DELAY_BETWEEN_PAGES))
             url = f"https://search.dcinside.com/post/p/{page}/q/{keyword}"
@@ -899,7 +911,7 @@ class DCInsideCrawler:
         all_posts = []
         if do_gallery and gallery_id:
             all_posts.extend(self.crawl_gallery(gallery_id, is_minor, max_pages, callback))
-        if do_keyword and keyword:
+        if not self._blocked and do_keyword and keyword:
             all_posts.extend(self.crawl_search(keyword, max_pages, callback))
         seen = set()
         unique = [p for p in all_posts if p['링크'] not in seen and not seen.add(p['링크'])]

@@ -132,14 +132,18 @@ def run_collection(keyword: str, config: dict, log_fn) -> dict:
     if config.get("use_dc"):
         log_fn("💬 디시인사이드 수집 시작...")
         try:
-            dc = DCInsideCrawler(days_limit=365)
+            dc = DCInsideCrawler(days_limit=config.get("dc_days_limit", 30))
             posts = dc.crawl_all(
                 "",
                 gallery_id=config.get("dc_gallery_id"),
                 is_minor=config.get("dc_is_minor", True),
-                max_pages=config.get("dc_max_pages", 10),
+                max_pages=config.get("dc_max_pages", 5),
                 callback=_dc_log_wrapper(log_fn, results),
             )
+            # 크롤러 내부 차단 감지도 반영
+            if dc._blocked:
+                results["dc_blocked"] = True
+
             posts = filter_noise(posts, "본문")
 
             if not results["dc_blocked"]:
@@ -147,6 +151,13 @@ def run_collection(keyword: str, config: dict, log_fn) -> dict:
                 results["dc_posts"] = posts
                 results["dc_count"] = len(posts)
                 log_fn(f"✅ 디시 완료: {len(posts)}개")
+            elif posts:
+                # 차단 전에 수집된 데이터는 부분 저장
+                posts = filter_noise(posts, "본문")
+                db.insert_dc_posts(keyword_id, posts)
+                results["dc_posts"] = posts
+                results["dc_count"] = len(posts)
+                log_fn(f"⚠️ 디시 IP 차단 — 차단 전 수집분 {len(posts)}개만 저장")
 
         except Exception as e:
             _handle_dc_error(e, log_fn, results)
