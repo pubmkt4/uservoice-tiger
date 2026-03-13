@@ -885,6 +885,7 @@ with right_col:
            else "ready" if st.session_state.collection_result
            else "pending")
     st.markdown(_step_header(2, "AI 분석", _s2), unsafe_allow_html=True)
+    st.caption("💳 AI 분석은 퍼블리싱마케팅4팀 GCP 비용으로 운영됩니다. 과도한 사용은 지양 부탁드립니다.")
 
     _no_data   = not st.session_state.collection_result
     _busy      = st.session_state.is_analyzing or st.session_state.is_quick_summarizing
