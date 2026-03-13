@@ -34,16 +34,34 @@ def _trunc(text: str, max_chars: int = MAX_TEXT_CHARS) -> str:
 def _parse_json(text: str):
     """Claude 응답에서 JSON 추출 (마크다운 코드블록 허용)"""
     text = re.sub(r"```(?:json)?\s*", "", text).replace("```", "").strip()
-    match = re.search(r"[\[\{].*[\]\}]", text, re.DOTALL)
-    if match:
-        try:
-            return json.loads(match.group())
-        except Exception:
-            pass
+
+    # 직접 파싱 먼저 시도
     try:
         return json.loads(text)
     except Exception:
-        return None
+        pass
+
+    # { ... } 추출 시도 (첫 { ~ 마지막 })
+    start = text.find('{')
+    if start != -1:
+        end = text.rfind('}')
+        if end > start:
+            try:
+                return json.loads(text[start:end + 1])
+            except Exception:
+                pass
+
+    # [ ... ] 추출 시도 (첫 [ ~ 마지막 ])
+    start = text.find('[')
+    if start != -1:
+        end = text.rfind(']')
+        if end > start:
+            try:
+                return json.loads(text[start:end + 1])
+            except Exception:
+                pass
+
+    return None
 
 
 def _sample(items: list, max_items: int = SAMPLE_MAX) -> list:
@@ -276,6 +294,14 @@ def generate_insights(client, keyword: str, unified_themes: list,
     """테마별 집계 + 대표 사례 → 마케팅 인사이트 카드"""
     stats = _aggregate_theme_stats(unified_themes, items_by_platform)
     if not stats:
+        if log_fn:
+            theme_count = len(unified_themes)
+            item_count = sum(len(v) for v in items_by_platform.values())
+            themed_count = sum(
+                1 for items in items_by_platform.values()
+                for item in items if item.get("theme")
+            )
+            log_fn(f"  ⚠️ 인사이트 생성 불가: 통합 테마 {theme_count}개, 전체 항목 {item_count}건 중 테마 매핑된 항목 {themed_count}건")
         return {}
 
     stats_text = ""
