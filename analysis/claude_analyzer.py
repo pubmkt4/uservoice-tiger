@@ -450,6 +450,21 @@ def run_full_analysis(project_id: str, region: str, keyword: str,
     use_individual = "건별" in config.get("sentiment_mode", "")
     lock = threading.Lock()
 
+    # 워커 스레드에서 log_fn(session_state) 직접 호출 불가 → 버퍼에 수집 후 메인 스레드에서 flush
+    _log_buf: list = []
+
+    def _tlog(msg: str):
+        """스레드 안전 로그 버퍼 기록"""
+        with lock:
+            _log_buf.append(msg)
+
+    def _flush_logs():
+        """메인 스레드에서 버퍼 → log_fn 전달"""
+        with lock:
+            for m in _log_buf:
+                log_fn(m)
+            _log_buf.clear()
+
     # 플랫폼별 (items, text_key) 매핑
     platforms = {
         "YouTube 댓글":       (collection_result.get("yt_comments", []), "댓글"),
@@ -461,8 +476,6 @@ def run_full_analysis(project_id: str, region: str, keyword: str,
     active = [(p, items, tk) for p, (items, tk) in platforms.items() if items]
     total_sent_batches = sum(math.ceil(len(it) / BATCH_SIZE) for _, it, _ in active)
     total_map_batches  = total_sent_batches
-    sent_done = [0]
-    map_done  = [0]
 
     # ── 1. 감성 태깅 — 플랫폼별 병렬 (0 → 40%) ─────────────────
     log_fn("😊 감성 태깅 시작... (병렬)")
@@ -470,42 +483,34 @@ def run_full_analysis(project_id: str, region: str, keyword: str,
 
     def _tag_platform(args):
         platform, items, text_key = args
-        log_fn(f"  [{platform}] {len(items)}건 감성 태깅 중...")
-
-        def on_batch(batch_num, total_b):
-            with lock:
-                sent_done[0] += 1
-                pct = int(sent_done[0] / max(total_sent_batches, 1) * 40)
-            _progress(pct, f"감성 태깅 중... ({sent_done[0]}/{total_sent_batches} 배치)")
-
+        _tlog(f"  [{platform}] {len(items)}건 감성 태깅 중...")
         if use_individual:
-            return platform, tag_sentiment_individual(client, items, text_key, log_fn), text_key
+            return platform, tag_sentiment_individual(client, items, text_key, _tlog), text_key
         else:
-            return platform, tag_sentiment_batch(client, items, text_key, log_fn, on_batch=on_batch), text_key
+            return platform, tag_sentiment_batch(client, items, text_key, _tlog), text_key
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
         for platform, tagged, text_key in ex.map(_tag_platform, active):
             platforms[platform] = (tagged, text_key)
+    _flush_logs()
+    _progress(40, "감성 태깅 완료")
 
     # ── 2. 테마 발굴 — 플랫폼별 병렬 (40 → 55%) ────────────────
     log_fn("🏷 플랫폼별 테마 발굴 시작... (병렬)")
     _progress(40, "테마 발굴 중...")
     platform_themes = {}
     active_platforms = [(p, items, tk) for p, (items, tk) in platforms.items() if items]
-    disc_done = [0]
 
     def _discover_platform(args):
         platform, items, text_key = args
-        themes = discover_themes(client, keyword, platform, items, text_key, log_fn)
-        with lock:
-            disc_done[0] += 1
-            pct = 40 + int(disc_done[0] / max(len(active_platforms), 1) * 15)
-        _progress(pct, f"테마 발굴 중... ({platform} 완료)")
+        themes = discover_themes(client, keyword, platform, items, text_key, _tlog)
         return platform, themes
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
         for platform, themes in ex.map(_discover_platform, active_platforms):
             platform_themes[platform] = themes
+    _flush_logs()
+    _progress(55, "테마 발굴 완료")
 
     # ── 3. 크로스플랫폼 통합 — 순차 필수 (55 → 65%) ────────────
     log_fn("🔗 크로스플랫폼 테마 통합 중...")
@@ -521,19 +526,14 @@ def run_full_analysis(project_id: str, region: str, keyword: str,
 
     def _map_platform(args):
         platform, items, text_key = args
-
-        def on_batch(batch_num, total_b):
-            with lock:
-                map_done[0] += 1
-                pct = 65 + int(map_done[0] / max(total_map_batches, 1) * 25)
-            _progress(pct, f"테마 매핑 중... ({map_done[0]}/{total_map_batches} 배치)")
-
-        mapped = map_themes(client, items, text_key, unified_themes, log_fn, on_batch=on_batch)
+        mapped = map_themes(client, items, text_key, unified_themes, _tlog)
         return platform, mapped, text_key
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
         for platform, mapped, text_key in ex.map(_map_platform, active_for_map):
             platforms[platform] = (mapped, text_key)
+    _flush_logs()
+    _progress(90, "테마 매핑 완료")
 
     # ── 5. 인사이트 생성 — 순차 필수 (90 → 100%) ───────────────
     log_fn("💡 인사이트 생성 중...")
