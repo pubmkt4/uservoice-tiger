@@ -477,6 +477,8 @@ def run_full_analysis(project_id: str, region: str, keyword: str,
     total_sent_batches = sum(math.ceil(len(it) / BATCH_SIZE) for _, it, _ in active)
     total_map_batches  = total_sent_batches
 
+    n_active = max(len(active), 1)
+
     # ── 1. 감성 태깅 — 플랫폼별 병렬 (0 → 40%) ─────────────────
     log_fn("😊 감성 태깅 시작... (병렬)")
     _progress(0, "감성 태깅 중...")
@@ -490,16 +492,22 @@ def run_full_analysis(project_id: str, region: str, keyword: str,
             return platform, tag_sentiment_batch(client, items, text_key, _tlog), text_key
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
-        for platform, tagged, text_key in ex.map(_tag_platform, active):
+        futures = {ex.submit(_tag_platform, args): args[0] for args in active}
+        done = 0
+        for future in as_completed(futures):
+            platform, tagged, text_key = future.result()
             platforms[platform] = (tagged, text_key)
-    _flush_logs()
-    _progress(40, "감성 태깅 완료")
+            done += 1
+            _flush_logs()
+            _progress(int(done / n_active * 40), f"감성 태깅 중... ({done}/{n_active} 플랫폼 완료)")
+    log_fn("  ✅ 감성 태깅 완료")
 
     # ── 2. 테마 발굴 — 플랫폼별 병렬 (40 → 55%) ────────────────
     log_fn("🏷 플랫폼별 테마 발굴 시작... (병렬)")
     _progress(40, "테마 발굴 중...")
     platform_themes = {}
     active_platforms = [(p, items, tk) for p, (items, tk) in platforms.items() if items]
+    n_plat = max(len(active_platforms), 1)
 
     def _discover_platform(args):
         platform, items, text_key = args
@@ -507,10 +515,15 @@ def run_full_analysis(project_id: str, region: str, keyword: str,
         return platform, themes
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
-        for platform, themes in ex.map(_discover_platform, active_platforms):
+        futures = {ex.submit(_discover_platform, args): args[0] for args in active_platforms}
+        done = 0
+        for future in as_completed(futures):
+            platform, themes = future.result()
             platform_themes[platform] = themes
-    _flush_logs()
-    _progress(55, "테마 발굴 완료")
+            done += 1
+            _flush_logs()
+            _progress(40 + int(done / n_plat * 15), f"테마 발굴 중... ({done}/{n_plat} 플랫폼 완료)")
+    log_fn("  ✅ 테마 발굴 완료")
 
     # ── 3. 크로스플랫폼 통합 — 순차 필수 (55 → 65%) ────────────
     log_fn("🔗 크로스플랫폼 테마 통합 중...")
@@ -523,6 +536,7 @@ def run_full_analysis(project_id: str, region: str, keyword: str,
     _progress(65, "테마 매핑 중...")
     active_for_map = [(p, items, tk) for p, (items, tk) in platforms.items()
                       if items and unified_themes]
+    n_map = max(len(active_for_map), 1)
 
     def _map_platform(args):
         platform, items, text_key = args
@@ -530,10 +544,15 @@ def run_full_analysis(project_id: str, region: str, keyword: str,
         return platform, mapped, text_key
 
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as ex:
-        for platform, mapped, text_key in ex.map(_map_platform, active_for_map):
+        futures = {ex.submit(_map_platform, args): args[0] for args in active_for_map}
+        done = 0
+        for future in as_completed(futures):
+            platform, mapped, text_key = future.result()
             platforms[platform] = (mapped, text_key)
-    _flush_logs()
-    _progress(90, "테마 매핑 완료")
+            done += 1
+            _flush_logs()
+            _progress(65 + int(done / n_map * 25), f"테마 매핑 중... ({done}/{n_map} 플랫폼 완료)")
+    log_fn("  ✅ 테마 매핑 완료")
 
     # ── 5. 인사이트 생성 — 순차 필수 (90 → 100%) ───────────────
     log_fn("💡 인사이트 생성 중...")
