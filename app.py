@@ -145,21 +145,21 @@ _CARD_CSS = """
 <style>
 /* ── 다크 리포트 공통 ── */
 .dr-wrap { background:#1C1C1E; border-radius:14px; padding:22px 24px; margin-bottom:14px; color:#E8E8E8; }
-.dr-brand { font-size:0.67rem; color:#555; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:10px; }
+.dr-brand { font-size:0.67rem; color:#909090; letter-spacing:1.2px; text-transform:uppercase; margin-bottom:10px; }
 .dr-brand em { color:#E8720C; font-style:normal; }
 .dr-title { font-size:1.9rem; font-weight:900; color:#FFFFFF; line-height:1.15; margin-bottom:6px; }
 .dr-title b { color:#E8720C; }
-.dr-sub { font-size:0.76rem; color:#666; margin-bottom:16px; }
+.dr-sub { font-size:0.76rem; color:#AAAAAA; margin-bottom:16px; }
 .dr-pills { display:flex; gap:7px; flex-wrap:wrap; }
-.dr-pill { background:#2A2A2A; border-radius:4px; padding:3px 10px; font-size:0.7rem; color:#888; }
+.dr-pill { background:#2A2A2A; border-radius:4px; padding:3px 10px; font-size:0.7rem; color:#BBBBBB; }
 .dr-pill-total { background:#E8720C; border-radius:4px; padding:3px 10px; font-size:0.7rem; font-weight:700; color:white; }
 /* ── 섹션 레이블 ── */
-.sec-lbl { font-size:0.67rem; color:#555; letter-spacing:0.8px; text-transform:uppercase;
-           font-weight:600; margin:20px 0 12px; padding-bottom:8px; border-bottom:1px solid #2A2A2A; }
+.sec-lbl { font-size:0.67rem; color:#909090; letter-spacing:0.8px; text-transform:uppercase;
+           font-weight:600; margin:20px 0 12px; padding-bottom:8px; border-bottom:1px solid #333; }
 /* ── 감성 메트릭 카드 ── */
 .met-card { background:#242424; border-radius:10px; padding:18px 16px; margin-bottom:6px; }
 .met-num { font-size:2.8rem; font-weight:800; line-height:1; }
-.met-pct { font-size:0.74rem; color:#888; margin-top:5px; }
+.met-pct { font-size:0.74rem; color:#BBBBBB; margin-top:5px; }
 .met-bar { height:3px; border-radius:2px; margin-top:14px; }
 /* ── 전체 감성 바 ── */
 .sent-total-bar { display:flex; height:7px; border-radius:4px; overflow:hidden; margin:10px 0 6px; }
@@ -167,13 +167,13 @@ _CARD_CSS = """
 /* ── 채널별 감성 ── */
 .ch-row { padding:12px 0; border-bottom:1px solid #2A2A2A; }
 .ch-row:last-child { border-bottom:none; }
-.ch-name { font-size:0.85rem; font-weight:700; color:#E0E0E0; }
-.ch-sub { font-size:0.69rem; color:#555; margin-bottom:8px; margin-top:2px; }
+.ch-name { font-size:0.85rem; font-weight:700; color:#E8E8E8; }
+.ch-sub { font-size:0.69rem; color:#AAAAAA; margin-bottom:8px; margin-top:2px; }
 .ch-bar-row { display:flex; align-items:center; gap:8px; margin-bottom:3px; }
 .ch-bar-lbl { font-size:0.67rem; width:22px; flex-shrink:0; }
 .ch-bar-bg { flex:1; background:#2A2A2A; border-radius:3px; height:6px; overflow:hidden; }
 .ch-bar-fill { height:100%; border-radius:3px; }
-.ch-bar-pct { font-size:0.67rem; color:#666; width:28px; text-align:right; flex-shrink:0; }
+.ch-bar-pct { font-size:0.67rem; color:#AAAAAA; width:28px; text-align:right; flex-shrink:0; }
 /* ── 감성 pill ── */
 .pill-neg { background:#9B2C2C; color:white; border-radius:6px; padding:5px 14px;
             font-size:0.8rem; font-weight:700; display:inline-block; margin-bottom:8px; }
@@ -186,7 +186,7 @@ _CARD_CSS = """
 .th-row:last-child { border-bottom:none; }
 .th-name { font-size:0.84rem; font-weight:700; color:#E0E0E0; min-width:110px; max-width:140px;
            flex-shrink:0; line-height:1.4; word-break:keep-all; }
-.th-desc { font-size:0.81rem; color:#999; line-height:1.6; }
+.th-desc { font-size:0.81rem; color:#C0C0C0; line-height:1.6; }
 /* ── 인사이트 카드 ── */
 .ins-card { display:flex; gap:16px; padding:14px 0; border-bottom:1px solid #2A2A2A; align-items:flex-start; }
 .ins-card:last-child { border-bottom:none; }
@@ -194,20 +194,20 @@ _CARD_CSS = """
            width:26px; height:26px; border-radius:4px; display:flex; align-items:center;
            justify-content:center; flex-shrink:0; font-family:monospace; }
 .ins-body { flex:1; }
-.ins-title { font-size:0.9rem; font-weight:700; color:#E0E0E0; margin-bottom:5px; }
-.ins-text { font-size:0.83rem; color:#999; line-height:1.65; }
+.ins-title { font-size:0.9rem; font-weight:700; color:#EEEEEE; margin-bottom:5px; }
+.ins-text { font-size:0.83rem; color:#C0C0C0; line-height:1.65; }
 .ins-action { font-size:0.8rem; color:#E8720C; margin-top:6px; }
 /* ── 요약 박스 ── */
 .sum-box { background:#242424; border-left:4px solid #E8720C; border-radius:0 8px 8px 0;
-           padding:16px 18px; font-size:0.87rem; color:#CCC; line-height:1.75; }
+           padding:16px 18px; font-size:0.87rem; color:#DDDDDD; line-height:1.75; }
 /* ── 빠른요약 ── */
 .qs-topic-row { display:flex; gap:14px; padding:9px 0; border-bottom:1px solid #2A2A2A; align-items:flex-start; }
 .qs-topic-row:last-child { border-bottom:none; }
-.qs-rank { background:#2A2A2A; color:#888; font-size:0.69rem; font-weight:700;
+.qs-rank { background:#2A2A2A; color:#BBBBBB; font-size:0.69rem; font-weight:700;
            width:20px; height:20px; border-radius:3px; display:flex; align-items:center;
            justify-content:center; flex-shrink:0; }
-.qs-topic-name { font-size:0.85rem; font-weight:700; color:#E0E0E0; margin-bottom:2px; }
-.qs-topic-desc { font-size:0.8rem; color:#888; line-height:1.5; }
+.qs-topic-name { font-size:0.85rem; font-weight:700; color:#EEEEEE; margin-bottom:2px; }
+.qs-topic-desc { font-size:0.8rem; color:#BBBBBB; line-height:1.5; }
 </style>
 """
 
@@ -233,7 +233,7 @@ def _render_quick_summary(qs: dict):
     if qs.get("summary"):
         st.markdown('<div class="sec-lbl">전체 동향</div>', unsafe_allow_html=True)
         reason = (
-            f'<br><br><span style="color:#888;font-size:0.82rem;font-style:italic">'
+            f'<br><br><span style="color:#BBBBBB;font-size:0.82rem;font-style:italic">'
             f'💡 {qs["sentiment_reason"]}</span>'
             if qs.get("sentiment_reason") else ""
         )
@@ -271,11 +271,11 @@ def _render_quick_summary(qs: dict):
 
         st.markdown("""
 <div style="background:#1C1C1E;border-radius:8px;padding:12px 14px;
-            border:1px solid #2A2A2A;font-size:0.73rem;color:#555;line-height:1.8">
-  <span style="color:#888;font-weight:600">📌 이 결과를 볼 때 꼭 알아두세요</span><br>
-  · 샘플 기반 <span style="color:#888">추정치</span> — 수치 그대로 인용 금지<br>
+            border:1px solid #2A2A2A;font-size:0.73rem;color:#909090;line-height:1.8">
+  <span style="color:#BBBBBB;font-weight:600">📌 이 결과를 볼 때 꼭 알아두세요</span><br>
+  · 샘플 기반 <span style="color:#BBBBBB">추정치</span> — 수치 그대로 인용 금지<br>
   · 누락된 맥락이 있을 수 있음<br>
-  · 정확한 근거가 필요하면 <span style="color:#888">정밀 분석</span> 사용<br>
+  · 정확한 근거가 필요하면 <span style="color:#BBBBBB">정밀 분석</span> 사용<br>
   · 동향 방향 확인, 보고 전 사전 점검에 적합
 </div>""", unsafe_allow_html=True)
 
@@ -479,7 +479,7 @@ def _build_cardnews_html(ar: dict, label: str) -> str:
     # 플랫폼 pills
     plat_pills = "".join(
         f'<span style="background:#2A2A2A;border-radius:4px;padding:3px 10px;'
-        f'font-size:0.7rem;color:#888">{p} {len(v):,}건</span>'
+        f'font-size:0.7rem;color:#BBBBBB">{p} {len(v):,}건</span>'
         for p, v in items_by_plat.items() if v
     )
 
@@ -497,13 +497,13 @@ def _build_cardnews_html(ar: dict, label: str) -> str:
               justify-content:center;flex-shrink:0;font-family:monospace">{i:02d}</div>
   <div>
     <div style="font-size:0.9rem;font-weight:700;color:#E0E0E0;margin-bottom:5px">{card.get('title','')}</div>
-    <div style="font-size:0.83rem;color:#999;line-height:1.65">{card.get('insight','')}</div>
+    <div style="font-size:0.83rem;color:#C0C0C0;line-height:1.65">{card.get('insight','')}</div>
     {action_h}
   </div>
 </div>"""
 
     ins_section = f"""
-<div style="font-size:0.67rem;color:#555;letter-spacing:0.8px;text-transform:uppercase;font-weight:600;
+<div style="font-size:0.67rem;color:#909090;letter-spacing:0.8px;text-transform:uppercase;font-weight:600;
             padding-bottom:8px;border-bottom:1px solid #2A2A2A;margin-bottom:0">핵심 인사이트</div>
 <div style="background:#1C1C1E;border-radius:12px;padding:12px 18px;margin-bottom:24px">{ins_rows}</div>
 """ if ins_rows else ""
@@ -536,7 +536,7 @@ def _build_cardnews_html(ar: dict, label: str) -> str:
 <div style="display:flex;gap:20px;padding:10px 0;border-bottom:1px solid #2A2A2A">
   <div style="font-size:0.84rem;font-weight:700;color:#E0E0E0;min-width:110px;max-width:140px;
               flex-shrink:0;line-height:1.4;word-break:keep-all">{stat['name']}</div>
-  <div style="font-size:0.81rem;color:#999;line-height:1.6">{combined}</div>
+  <div style="font-size:0.81rem;color:#C0C0C0;line-height:1.6">{combined}</div>
 </div>"""
             grp_html += f"""
 <div style="margin-bottom:20px">
@@ -547,7 +547,7 @@ def _build_cardnews_html(ar: dict, label: str) -> str:
 </div>"""
 
         theme_section = f"""
-<div style="font-size:0.67rem;color:#555;letter-spacing:0.8px;text-transform:uppercase;font-weight:600;
+<div style="font-size:0.67rem;color:#909090;letter-spacing:0.8px;text-transform:uppercase;font-weight:600;
             padding-bottom:8px;border-bottom:1px solid #2A2A2A;margin-bottom:0">주요 동향 요약</div>
 <div style="background:#1C1C1E;border-radius:12px;padding:14px 18px;margin-bottom:24px">{grp_html}</div>"""
 
@@ -568,33 +568,33 @@ def _build_cardnews_html(ar: dict, label: str) -> str:
             ch_rows += f"""
 <div style="padding:12px 0;border-bottom:1px solid #2A2A2A">
   <div style="font-size:0.85rem;font-weight:700;color:#E0E0E0">{plat}</div>
-  <div style="font-size:0.69rem;color:#555;margin-bottom:8px">{ps['count']:,}건</div>
+  <div style="font-size:0.69rem;color:#909090;margin-bottom:8px">{ps['count']:,}건</div>
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
     <span style="font-size:0.67rem;color:#E53E3E;width:22px">부정</span>
     <div style="flex:1;background:#2A2A2A;border-radius:3px;height:6px">
       <div style="width:{ps['neg_pct']}%;background:#E53E3E;height:6px;border-radius:3px"></div></div>
-    <span style="font-size:0.67rem;color:#666;width:28px;text-align:right">{ps['neg_pct']}%</span>
+    <span style="font-size:0.67rem;color:#AAAAAA;width:28px;text-align:right">{ps['neg_pct']}%</span>
   </div>
   <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
     <span style="font-size:0.67rem;color:#718096;width:22px">중립</span>
     <div style="flex:1;background:#2A2A2A;border-radius:3px;height:6px">
       <div style="width:{ps['neu_pct']}%;background:#4A5568;height:6px;border-radius:3px"></div></div>
-    <span style="font-size:0.67rem;color:#666;width:28px;text-align:right">{ps['neu_pct']}%</span>
+    <span style="font-size:0.67rem;color:#AAAAAA;width:28px;text-align:right">{ps['neu_pct']}%</span>
   </div>
   <div style="display:flex;align-items:center;gap:8px">
     <span style="font-size:0.67rem;color:#38A169;width:22px">긍정</span>
     <div style="flex:1;background:#2A2A2A;border-radius:3px;height:6px">
       <div style="width:{ps['pos_pct']}%;background:#38A169;height:6px;border-radius:3px"></div></div>
-    <span style="font-size:0.67rem;color:#666;width:28px;text-align:right">{ps['pos_pct']}%</span>
+    <span style="font-size:0.67rem;color:#AAAAAA;width:28px;text-align:right">{ps['pos_pct']}%</span>
   </div>
 </div>"""
         ch_section = f"""
-<div style="font-size:0.67rem;color:#555;letter-spacing:0.8px;text-transform:uppercase;font-weight:600;
+<div style="font-size:0.67rem;color:#909090;letter-spacing:0.8px;text-transform:uppercase;font-weight:600;
             padding-bottom:8px;border-bottom:1px solid #2A2A2A;margin-bottom:0">채널별 감성 비교</div>
 <div style="background:#1C1C1E;border-radius:12px;padding:14px 18px;margin-bottom:24px">{ch_rows}</div>"""
 
     summary_html = f"""
-<div style="font-size:0.67rem;color:#555;letter-spacing:0.8px;text-transform:uppercase;font-weight:600;
+<div style="font-size:0.67rem;color:#909090;letter-spacing:0.8px;text-transform:uppercase;font-weight:600;
             padding-bottom:8px;border-bottom:1px solid #2A2A2A;margin-bottom:12px">종합 동향 요약</div>
 <div style="background:#242424;border-left:4px solid #E8720C;border-radius:0 8px 8px 0;
             padding:16px 18px;font-size:0.87rem;color:#CCC;line-height:1.75;margin-bottom:24px">{ins["summary"]}</div>
@@ -614,10 +614,10 @@ body {{ font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
   <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
     {logo}
     <div>
-      <div style="font-size:0.67rem;color:#555;letter-spacing:1px">● 동향 수집하는 호랑이 · TREND REPORT {datetime.now().year}</div>
+      <div style="font-size:0.67rem;color:#909090;letter-spacing:1px">● 동향 수집하는 호랑이 · TREND REPORT {datetime.now().year}</div>
       <div style="font-size:1.7rem;font-weight:900;color:#FFFFFF;margin-top:4px;line-height:1.15">
         {label} <span style="color:#E8720C">동향 분석</span></div>
-      <div style="font-size:0.74rem;color:#666;margin-top:5px">{datetime.now().strftime('%Y년 %m월 %d일')} 기준 · Claude AI 분석</div>
+      <div style="font-size:0.74rem;color:#AAAAAA;margin-top:5px">{datetime.now().strftime('%Y년 %m월 %d일')} 기준 · Claude AI 분석</div>
     </div>
   </div>
   <div style="display:flex;gap:7px;flex-wrap:wrap;margin-top:10px">
@@ -626,22 +626,22 @@ body {{ font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif;
   </div>
 </div>
 
-<div style="font-size:0.67rem;color:#555;letter-spacing:0.8px;text-transform:uppercase;font-weight:600;
+<div style="font-size:0.67rem;color:#909090;letter-spacing:0.8px;text-transform:uppercase;font-weight:600;
             padding-bottom:8px;border-bottom:1px solid #2A2A2A;margin-bottom:12px">전체 감성 분포</div>
 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">
   <div style="background:#242424;border-radius:10px;padding:18px 16px">
     <div style="font-size:2.6rem;font-weight:800;color:#E53E3E;line-height:1">{neg:,}</div>
-    <div style="font-size:0.72rem;color:#888;margin-top:5px">부정 · 전체의 {neg_pct}%</div>
+    <div style="font-size:0.72rem;color:#BBBBBB;margin-top:5px">부정 · 전체의 {neg_pct}%</div>
     <div style="height:3px;background:#E53E3E;border-radius:2px;margin-top:12px;width:{neg_pct}%"></div>
   </div>
   <div style="background:#242424;border-radius:10px;padding:18px 16px">
     <div style="font-size:2.6rem;font-weight:800;color:#4A5568;line-height:1">{neu:,}</div>
-    <div style="font-size:0.72rem;color:#888;margin-top:5px">중립 · 전체의 {neu_pct}%</div>
+    <div style="font-size:0.72rem;color:#BBBBBB;margin-top:5px">중립 · 전체의 {neu_pct}%</div>
     <div style="height:3px;background:#4A5568;border-radius:2px;margin-top:12px;width:{neu_pct}%"></div>
   </div>
   <div style="background:#242424;border-radius:10px;padding:18px 16px">
     <div style="font-size:2.6rem;font-weight:800;color:#38A169;line-height:1">{pos:,}</div>
-    <div style="font-size:0.72rem;color:#888;margin-top:5px">긍정 · 전체의 {pos_pct}%</div>
+    <div style="font-size:0.72rem;color:#BBBBBB;margin-top:5px">긍정 · 전체의 {pos_pct}%</div>
     <div style="height:3px;background:#38A169;border-radius:2px;margin-top:12px;width:{pos_pct}%"></div>
   </div>
 </div>
@@ -748,10 +748,10 @@ st.markdown(f"""
   <div style="flex:1">
     <div style="font-size:2.4rem;font-weight:900;color:#E8720C;line-height:1.15;
                 letter-spacing:-0.5px">동향 수집하는 호랑이</div>
-    <div style="font-size:1rem;color:#999;margin-top:8px">
+    <div style="font-size:1rem;color:#C0C0C0;margin-top:8px">
       게임 커뮤니티 반응을 플랫폼별로 수집하고 Claude AI로 분석합니다
     </div>
-    <div style="font-size:0.72rem;color:#ccc;margin-top:6px;letter-spacing:0.3px">
+    <div style="font-size:0.72rem;color:#DDDDDD;margin-top:6px;letter-spacing:0.3px">
       {_TEAM} &nbsp;·&nbsp; {_VERSION}
     </div>
   </div>
@@ -775,7 +775,7 @@ with left_col:
             if use_youtube:
                 st.markdown("**📺 YouTube 댓글**")
             else:
-                st.markdown('<span style="color:#bbb">📺 YouTube 댓글</span>', unsafe_allow_html=True)
+                st.markdown('<span style="color:#CCCCCC">📺 YouTube 댓글</span>', unsafe_allow_html=True)
         if use_youtube:
             yt_api_key = _YT_API_KEY
             if not yt_api_key:
@@ -816,7 +816,7 @@ with left_col:
             if use_dc:
                 st.markdown("**💬 디시인사이드**")
             else:
-                st.markdown('<span style="color:#bbb">💬 디시인사이드</span>', unsafe_allow_html=True)
+                st.markdown('<span style="color:#CCCCCC">💬 디시인사이드</span>', unsafe_allow_html=True)
         if use_dc:
             dc1, dc2, dc3 = st.columns([3, 1, 1])
             with dc1:
@@ -839,7 +839,7 @@ with left_col:
             if use_appstore:
                 st.markdown("**🍎 앱스토어**")
             else:
-                st.markdown('<span style="color:#bbb">🍎 앱스토어</span>', unsafe_allow_html=True)
+                st.markdown('<span style="color:#CCCCCC">🍎 앱스토어</span>', unsafe_allow_html=True)
         if use_appstore:
             appstore_id = st.text_input("앱 ID (숫자)", placeholder="예: 641397086", key="app_id")
         else:
@@ -854,7 +854,7 @@ with left_col:
             if use_playstore:
                 st.markdown("**🤖 플레이스토어**")
             else:
-                st.markdown('<span style="color:#bbb">🤖 플레이스토어</span>', unsafe_allow_html=True)
+                st.markdown('<span style="color:#CCCCCC">🤖 플레이스토어</span>', unsafe_allow_html=True)
         if use_playstore:
             playstore_id = st.text_input(
                 "패키지명", placeholder="예: com.smilegate.LOSTARK", key="play_id"
@@ -1468,7 +1468,7 @@ body {{ font-family:'Malgun Gothic',sans-serif; background:#F8F9FA; color:#222; 
 .header {{ display:flex; align-items:center; gap:16px; margin-bottom:24px;
            border-bottom:3px solid #E8720C; padding-bottom:16px; }}
 .header-text h1 {{ font-size:1.4rem; color:#E8720C; }}
-.header-text p  {{ font-size:0.82rem; color:#888; margin-top:4px; }}
+.header-text p  {{ font-size:0.82rem; color:#BBBBBB; margin-top:4px; }}
 .summary-box {{ background:#E3F2FD; border-radius:12px; padding:14px 18px;
                 margin-bottom:16px; font-size:0.92rem; color:#0D47A1; line-height:1.7; }}
 .flow-box {{ background:#FFF8E1; border-radius:12px; padding:12px 16px;
@@ -1482,7 +1482,7 @@ body {{ font-family:'Malgun Gothic',sans-serif; background:#F8F9FA; color:#222; 
 .hi-card {{ background:#FFF3E0; border-radius:10px; padding:12px 16px;
             margin-bottom:10px; }}
 .hi-label {{ font-weight:700; font-size:0.9rem; color:#E65100; margin-bottom:6px; }}
-.hi-samples {{ padding-left:18px; font-size:0.82rem; color:#555; line-height:1.8; }}
+.hi-samples {{ padding-left:18px; font-size:0.82rem; color:#909090; line-height:1.8; }}
 .section-title {{ font-size:1rem; font-weight:700; margin:20px 0 10px; color:#333; }}
 .cards-grid {{ display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin-bottom:24px; }}
 .cn-card {{ background:#fff; border-radius:12px; padding:16px 18px;
@@ -1491,10 +1491,10 @@ body {{ font-family:'Malgun Gothic',sans-serif; background:#F8F9FA; color:#222; 
 .cn-badge  {{ display:inline-block; padding:2px 10px; border-radius:14px;
               font-size:0.73rem; font-weight:600; color:#fff; margin-bottom:8px; }}
 .cn-insight {{ font-size:0.85rem; line-height:1.6; color:#333; margin-bottom:6px; }}
-.cn-evidence {{ font-size:0.78rem; color:#666; background:#F5F5F5;
+.cn-evidence {{ font-size:0.78rem; color:#AAAAAA; background:#F5F5F5;
                 border-radius:8px; padding:6px 10px; margin-bottom:5px; }}
 .cn-action {{ font-size:0.8rem; color:#1565C0; font-weight:500; }}
-.footer {{ text-align:center; font-size:0.72rem; color:#bbb; margin-top:16px; }}
+.footer {{ text-align:center; font-size:0.72rem; color:#CCCCCC; margin-top:16px; }}
 @media print {{ body {{ padding:16px; }} }}
 </style></head><body>
 <div class="header">
@@ -1524,7 +1524,7 @@ body {{ font-family:'Malgun Gothic',sans-serif; background:#F8F9FA; color:#222; 
 
 # ─── 페이지 푸터 ──────────────────────────────────────────────
 st.markdown(
-    f'<div style="text-align:center;color:#bbb;font-size:0.72rem;'
+    f'<div style="text-align:center;color:#CCCCCC;font-size:0.72rem;'
     f'padding:32px 0 12px;letter-spacing:0.3px">'
     f'{_TEAM} &nbsp;·&nbsp; 동향 수집하는 호랑이 &nbsp;·&nbsp; {_VERSION}'
     f'</div>',
