@@ -28,7 +28,7 @@ _YT_API_KEY   = st.secrets.get("youtube", {}).get("api_key", "")
 _GCP_PROJECT  = st.secrets.get("gcp", {}).get("project_id", "o-pubmkt4-team")
 _GCP_REGION   = st.secrets.get("gcp", {}).get("region", "us-east5")
 
-_VERSION = "v1.8"
+_VERSION = "v1.9"
 _TEAM    = "퍼블리싱마케팅4팀"
 
 # ─── 호랑이 PNG 로딩 애니메이션 ──────────────────────────────
@@ -868,6 +868,13 @@ with left_col:
                 st.caption("⚠️ 주의 — 반복 수집 시 IP 차단 가능")
             else:
                 st.caption("🚨 위험 — IP 차단 가능성 높음. 하루 1회 이하 권장")
+            st.info(
+                "💡 **디시인사이드는 로컬 실행 시에만 수집 가능합니다.**\n\n"
+                "클라우드(웹) 버전은 서버 IP가 차단되어 있어 수집이 되지 않습니다. "
+                "로컬에서 실행하려면 터미널에서 `streamlit run app.py` 를 실행하세요.\n\n"
+                "추후 로컬 전용 수집 실행 기능을 추가할 예정입니다.",
+                icon=None
+            )
         else:
             dc_gallery_id = ""
             dc_is_minor   = True
