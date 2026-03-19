@@ -28,7 +28,7 @@ _YT_API_KEY   = st.secrets.get("youtube", {}).get("api_key", "")
 _GCP_PROJECT  = st.secrets.get("gcp", {}).get("project_id", "o-pubmkt4-team")
 _GCP_REGION   = st.secrets.get("gcp", {}).get("region", "us-east5")
 
-_VERSION = "v1.7"
+_VERSION = "v1.8"
 _TEAM    = "퍼블리싱마케팅4팀"
 
 # ─── 호랑이 PNG 로딩 애니메이션 ──────────────────────────────

@@ -712,10 +712,10 @@ class YouTubeLiveCrawler:
 # ============================================================
 class DCInsideCrawler:
     DEFAULT_HEADERS = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-        "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
-        "Referer": "https://gall.dcinside.com/",
+        "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "ko-KR,ko;q=0.9",
+        "Referer": "https://m.dcinside.com/",
     }
     DELAY_BETWEEN_PAGES = (3.0, 6.0)
     DELAY_BETWEEN_POSTS = (3.0, 5.0)
@@ -727,11 +727,11 @@ class DCInsideCrawler:
         self._session.headers.update(self.DEFAULT_HEADERS)
 
     def _warmup_session(self, callback=None):
-        """DC 메인 페이지를 먼저 방문해 쿠키를 받은 뒤 크롤링 시작"""
+        """모바일 DC 메인 페이지를 먼저 방문해 쿠키를 받은 뒤 크롤링 시작"""
         try:
             if callback:
                 callback("  디시인사이드 세션 초기화 중...")
-            self._session.get("https://gall.dcinside.com/", verify=False, timeout=12)
+            self._session.get("https://m.dcinside.com/", timeout=12)
             time.sleep(random.uniform(2.0, 4.0))
         except Exception:
             pass
@@ -778,55 +778,51 @@ class DCInsideCrawler:
             if not text or len(text) < 500:
                 return ""
             soup = BeautifulSoup(text, "html.parser")
-            content_box = soup.select_one("div.writing_view_box")
+            # 모바일: div.view-content / 데스크탑 폴백: div.writing_view_box
+            content_box = (soup.select_one("div.view-content")
+                           or soup.select_one("div.writing_view_box"))
             return content_box.get_text(separator="\n", strip=True) if content_box else ""
         except Exception:
             return ""
     
-    def _get_gallery_posts_from_page(self, soup, gallery_id):
-        """갤러리 목록 페이지에서 게시글 행 추출. 여러 선택자 시도."""
-        # 1) 기본: 클래스로 게시글 행만
-        posts = soup.select("tr.ub-content.us-post")
-        if posts:
-            return posts
-        # 2) tbody tr + td.gall_tit a
-        for tr in soup.select("tbody tr"):
-            a = tr.select_one("td.gall_tit a[href*='board/view']")
-            if not a:
-                a = tr.select_one("td.gall_tit a[href*='view']")
-            if a:
-                href = a.get("href") or ""
-                if gallery_id in href and "javascript" not in href:
-                    posts.append(tr)
-        if posts:
-            return posts
-        # 3) tbody 없거나 구조 다름: 모든 tr 중 해당 갤 view 링크가 있는 행 (중복 제거)
+    def _get_mobile_posts_from_page(self, soup, gallery_id, is_minor=True):
+        """모바일 갤러리 목록에서 게시글 항목 추출. 여러 선택자 시도."""
+        board_type = "mini/board" if is_minor else "board"
+        # 1) 모바일 표준 목록 선택자
+        for sel in ["ul.gall-list > li", "ul.list-item > li", "li.list-item", "li.ub-content"]:
+            items = soup.select(sel)
+            if items:
+                return items
+        # 2) 폴백: 해당 갤 뷰 링크가 있는 li
+        posts = []
         seen = set()
-        for tr in soup.select("tr"):
-            a = tr.select_one("a[href*='view']")
+        for li in soup.select("li"):
+            a = li.select_one(f"a[href*='/{board_type}/{gallery_id}']")
+            if not a:
+                a = li.select_one("a[href*='/view/']")
             if not a:
                 continue
-            href = (a.get("href") or "")
-            if gallery_id not in href or "javascript" in href or "id=" not in href:
+            href = a.get("href") or ""
+            if "javascript" in href or gallery_id not in href:
                 continue
-            key = id(tr)
+            key = id(li)
             if key in seen:
                 continue
             seen.add(key)
-            posts.append(tr)
+            posts.append(li)
         return posts
 
     def crawl_gallery(self, gallery_id, is_minor=True, max_pages=10, callback=None):
         results = []
         self._warmup_session(callback)
-        gallery_type = "mgallery/board" if is_minor else "board"
+        board_type = "mini/board" if is_minor else "board"
         for page in range(1, max_pages + 1):
             if self._blocked:
                 break
             if page > 1:
                 delay = random.uniform(*self.DELAY_BETWEEN_PAGES)
                 time.sleep(delay)
-            url = f"https://gall.dcinside.com/{gallery_type}/lists/?id={gallery_id}&page={page}"
+            url = f"https://m.dcinside.com/{board_type}/{gallery_id}?page={page}"
             try:
                 resp = self._request_with_retry(url, callback)
                 if not resp or resp.status_code != 200:
@@ -835,35 +831,37 @@ class DCInsideCrawler:
                     continue
                 html = resp.text
                 soup = BeautifulSoup(html, "html.parser")
-                posts = self._get_gallery_posts_from_page(soup, gallery_id)
+                posts = self._get_mobile_posts_from_page(soup, gallery_id, is_minor)
                 if not posts:
                     if callback:
-                        callback(f"  [디버그] HTML 길이={len(html)}, gallery_id 포함={gallery_id in html}, status={resp.status_code}")
-                        callback(f"  [디버그] HTML 앞부분: {html[:300].strip()}")
-                        if len(html) < 2000 or gallery_id not in html:
-                            callback(f"  디시 갤러리 {page}페이지: 목록 0개 (IP 제한·캡차 또는 비정상 응답 가능성)")
+                        if len(html) < 2000:
+                            callback(f"  디시 갤러리 {page}페이지: 목록 0개 (IP 제한 또는 비정상 응답, HTML={len(html)})")
                         else:
-                            callback(f"  디시 갤러리 {page}페이지: 목록 0개 (HTML 구조 변경 가능성)")
+                            callback(f"  디시 갤러리 {page}페이지: 목록 0개 (HTML 구조 확인 필요)")
                 time.sleep(random.uniform(1.0, 2.0))
                 added = 0
                 for post in posts:
-                    title_el = post.select_one("td.gall_tit a")
-                    if not title_el:
-                        for a in post.select("a[href*='view']"):
-                            h = a.get("href") or ""
-                            if gallery_id in h and "javascript" not in h and "id=" in h:
-                                title_el = a
-                                break
-                    date_el = post.select_one("td.gall_date")
+                    # 모바일: 제목은 span.ub-word 또는 a 태그 내부
+                    title_el = (post.select_one("span.ub-word")
+                                or post.select_one("a.lt")
+                                or post.select_one(f"a[href*='/{board_type}/{gallery_id}']"))
+                    date_el = (post.select_one("span.date-time")
+                               or post.select_one("em.date")
+                               or post.select_one("span.gall_date"))
                     if not title_el:
                         continue
-                    href = title_el.get("href") or ""
-                    if "javascript" in href or gallery_id not in href:
+                    href = ""
+                    if title_el.name == "a":
+                        href = title_el.get("href") or ""
+                    else:
+                        parent_a = title_el.find_parent("a")
+                        href = parent_a.get("href") or "" if parent_a else ""
+                    if not href or "javascript" in href:
                         continue
-                    date_str = date_el.get("title", date_el.text.strip()) if date_el else ""
-                    link = "https://gall.dcinside.com" + href if href.startswith("/") else href
+                    date_str = date_el.text.strip() if date_el else ""
+                    link = "https://m.dcinside.com" + href if href.startswith("/") else href
                     if not link.startswith("http"):
-                        link = "https://gall.dcinside.com" + link
+                        link = "https://m.dcinside.com/" + link
                     content = self._get_post_content(link, callback)
                     results.append({
                         "제목": title_el.text.strip(), "링크": link,
