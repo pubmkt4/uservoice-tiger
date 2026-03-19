@@ -711,54 +711,27 @@ class YouTubeLiveCrawler:
 # 디시인사이드 크롤러 (IP 차단 리스크 관리 포함)
 # ============================================================
 class DCInsideCrawler:
-    USER_AGENTS = [
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36 Edg/134.0.0.0",
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:137.0) Gecko/20100101 Firefox/137.0",
-        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
-    ]
-    DELAY_BETWEEN_PAGES = (3.0, 7.0)
-    DELAY_BETWEEN_POSTS = (2.0, 4.0)
+    DEFAULT_HEADERS = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/135.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Referer": "https://gall.dcinside.com/",
+    }
+    DELAY_BETWEEN_PAGES = (3.0, 6.0)
+    DELAY_BETWEEN_POSTS = (3.0, 5.0)
 
     def __init__(self, days_limit=30):
         self.cutoff_date = datetime.now() - timedelta(days=days_limit)
         self._blocked = False
-        if CLOUDSCRAPER_AVAILABLE:
-            self._session = cloudscraper.create_scraper(
-                browser={"browser": "chrome", "platform": "windows", "mobile": False}
-            )
-        else:
-            self._session = requests.Session()
-        self._rotate_ua()
-
-    def _rotate_ua(self):
-        ua = random.choice(self.USER_AGENTS)
-        is_firefox = "Firefox" in ua
-        headers = {
-            "User-Agent": ua,
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-            "Accept-Language": "ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7",
-            "Accept-Encoding": "gzip, deflate, br",
-            "Connection": "keep-alive",
-            "Referer": "https://gall.dcinside.com/",
-            "Upgrade-Insecure-Requests": "1",
-            "Sec-Fetch-Dest": "document",
-            "Sec-Fetch-Mode": "navigate",
-            "Sec-Fetch-Site": "same-origin",
-            "Sec-Fetch-User": "?1",
-        }
-        if not is_firefox:
-            headers["Sec-Ch-Ua"] = '"Chromium";v="135", "Not:A-Brand";v="24"'
-            headers["Sec-Ch-Ua-Mobile"] = "?0"
-            headers["Sec-Ch-Ua-Platform"] = '"Windows"'
-        self._session.headers.update(headers)
+        self._session = requests.Session()
+        self._session.headers.update(self.DEFAULT_HEADERS)
 
     def _warmup_session(self, callback=None):
         """DC 메인 페이지를 먼저 방문해 쿠키를 받은 뒤 크롤링 시작"""
         try:
             if callback:
                 callback("  디시인사이드 세션 초기화 중...")
-            self._session.get("https://gall.dcinside.com/", timeout=12)
+            self._session.get("https://gall.dcinside.com/", verify=False, timeout=12)
             time.sleep(random.uniform(2.0, 4.0))
         except Exception:
             pass
@@ -778,14 +751,13 @@ class DCInsideCrawler:
         if self._blocked:
             return None
         try:
-            resp = self._session.get(url, timeout=12)
+            resp = self._session.get(url, verify=False, timeout=12)
             if resp.status_code == 403:
                 wait = random.uniform(30, 60)
                 if callback:
                     callback(f"  ⚠️ 디시 접근 제한(403) — {int(wait)}초 대기 후 재시도")
-                self._rotate_ua()
                 time.sleep(wait)
-                resp = self._session.get(url, timeout=12)
+                resp = self._session.get(url, verify=False, timeout=12)
                 if resp.status_code == 403:
                     if callback:
                         callback("  ⛔ 디시 IP 차단 확인 (연속 403) — 수집 즉시 중단")
