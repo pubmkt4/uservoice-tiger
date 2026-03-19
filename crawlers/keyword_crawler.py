@@ -866,6 +866,8 @@ class DCInsideCrawler:
                 posts = self._get_gallery_posts_from_page(soup, gallery_id)
                 if not posts:
                     if callback:
+                        callback(f"  [디버그] HTML 길이={len(html)}, gallery_id 포함={gallery_id in html}, status={resp.status_code}")
+                        callback(f"  [디버그] HTML 앞부분: {html[:300].strip()}")
                         if len(html) < 2000 or gallery_id not in html:
                             callback(f"  디시 갤러리 {page}페이지: 목록 0개 (IP 제한·캡차 또는 비정상 응답 가능성)")
                         else:
