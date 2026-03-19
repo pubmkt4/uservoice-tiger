@@ -1126,6 +1126,33 @@ with tab_download:
         else:
             st.info("분석 결과가 있지만 카드뉴스 생성에 실패했습니다. 분석을 다시 실행해 보세요.")
 
+        # ── 카드뉴스 에이전트용 JSON ──────────────────────────
+        st.markdown("---")
+        st.markdown("#### 🤖 카드뉴스 에이전트용 데이터")
+        if not st.session_state.analysis_result:
+            st.info("STEP 2 분석 완료 후 다운로드할 수 있습니다.")
+        else:
+            _export = {
+                "keyword": _label,
+                "exported_at": datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "insights": st.session_state.analysis_result.get("insights", {}),
+                "unified_themes": st.session_state.analysis_result.get("unified_themes", []),
+                "platform_summary": {
+                    p: len(items)
+                    for p, items in st.session_state.analysis_result.get("platform_items", {}).items()
+                    if items
+                },
+            }
+            _json_bytes = json.dumps(_export, ensure_ascii=False, indent=2).encode("utf-8")
+            _json_file  = f"{_label}_분석결과_{datetime.now().strftime('%Y%m%d_%H%M')}.json"
+            st.download_button(
+                label="📥 JSON 다운로드",
+                data=_json_bytes,
+                file_name=_json_file,
+                mime="application/json",
+            )
+            st.caption("카드뉴스 에이전트에 이 파일을 넣으면 카드뉴스가 자동 생성됩니다.")
+
 # ─── 빠른 요약 실행 ──────────────────────────────────────────
 if quick_btn and st.session_state.collection_result:
     st.session_state.is_quick_summarizing = True
