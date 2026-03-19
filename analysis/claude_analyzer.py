@@ -611,6 +611,74 @@ def _aggregate_theme_stats(themes: list, items_by_platform: dict) -> list:
     return sorted(stats, key=lambda x: x["count"], reverse=True)
 
 
+def summarize_youtube_videos(project_id: str, region: str,
+                             yt_videos: list, yt_comments: list,
+                             log_fn=None) -> list:
+    """
+    영상별로 성격 + 분위기 + 댓글 반응 요약.
+    반환: [{영상 제목, 채널명, 조회수, 링크, 영상_성격, 분위기, 댓글_요약, 감성}]
+    """
+    if not yt_videos:
+        return []
+
+    client = _client(project_id, region)
+
+    # 댓글을 영상 제목으로 그룹핑
+    comment_map: dict = {}
+    for c in yt_comments:
+        title = c.get("영상 제목", "")
+        comment_map.setdefault(title, []).append(c.get("댓글", ""))
+
+    results = []
+    total = len(yt_videos)
+    for i, video in enumerate(yt_videos, 1):
+        title   = video.get("영상 제목", "")
+        desc    = video.get("영상 설명", "")
+        channel = video.get("채널명", "")
+        cmts    = comment_map.get(title, [])
+        sample  = _sample([c for c in cmts if len(str(c)) >= 5], 60)
+        cmt_block = "\n".join(f"- {str(c)[:150]}" for c in sample) if sample else "댓글 없음"
+
+        prompt = (
+            f'유튜브 영상 정보와 댓글을 분석해 주세요. 반드시 JSON만 출력하세요.\n\n'
+            f'영상 제목: {title}\n'
+            f'채널: {channel}\n'
+            f'영상 설명: {_trunc(desc, 400)}\n'
+            f'댓글 샘플 ({len(sample)}개):\n{cmt_block}\n\n'
+            f'{{"video_type": "영상 성격 (예: 공식 트레일러/유저 리뷰/공략/반응영상 등 한 단어~짧은 구)",\n'
+            f' "mood": "영상의 전반적인 분위기 한 문장",\n'
+            f' "comment_summary": "댓글 반응 요약 2문장",\n'
+            f' "sentiment": "긍정/부정/혼재 중 하나"}}'
+        )
+        try:
+            resp = client.messages.create(
+                model=HAIKU, max_tokens=400,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            r = _parse_json(resp.content[0].text)
+            if isinstance(r, dict):
+                results.append({
+                    "영상 제목":  title,
+                    "채널명":     channel,
+                    "조회수":     video.get("조회수", ""),
+                    "업로드일":   video.get("업로드일", ""),
+                    "링크":       video.get("링크", ""),
+                    "댓글수_실제": len(cmts),
+                    "영상_성격":  r.get("video_type", ""),
+                    "분위기":     r.get("mood", ""),
+                    "댓글_요약":  r.get("comment_summary", ""),
+                    "감성":       r.get("sentiment", "혼재"),
+                })
+                if log_fn:
+                    log_fn(f"  [{i}/{total}] 영상 요약 완료: {title[:30]}...")
+        except Exception as e:
+            if log_fn:
+                log_fn(f"  ⚠️ [{title[:20]}] 요약 오류: {e}")
+        time.sleep(0.5)
+
+    return results
+
+
 def _generate_insights_fallback(client, keyword: str, unified_themes: list,
                                  items_by_platform: dict, log_fn=None) -> dict:
     """테마 매핑 실패 시 원본 샘플 텍스트로 인사이트 직접 생성"""

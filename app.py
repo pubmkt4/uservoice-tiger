@@ -15,7 +15,7 @@ from PIL import Image
 from datetime import datetime, timedelta
 from database.schema import init_db
 from crawlers.collector import run_collection
-from analysis.claude_analyzer import run_full_analysis, run_quick_summary, _aggregate_theme_stats
+from analysis.claude_analyzer import run_full_analysis, run_quick_summary, _aggregate_theme_stats, summarize_youtube_videos
 from analysis.live_analyzer import run_live_analysis
 from analysis.visualizer import (
     sentiment_by_platform,
@@ -210,6 +210,37 @@ _CARD_CSS = """
 .qs-topic-desc { font-size:0.8rem; color:#BBBBBB; line-height:1.5; }
 </style>
 """
+
+
+def _render_youtube_video_cards(summaries: list):
+    """영상별 성격·분위기·댓글 반응 요약 카드"""
+    if not summaries:
+        return
+    st.markdown('<div class="sec-lbl">YouTube 영상별 요약</div>', unsafe_allow_html=True)
+    cols = st.columns(2)
+    for i, s in enumerate(summaries):
+        sent       = s.get("감성", "혼재")
+        sent_color = {"긍정": "#276749", "부정": "#9B2C2C"}.get(sent, "#2D3748")
+        link       = s.get("링크", "")
+        title_html = (f'<a href="{link}" target="_blank" style="color:#EEEEEE;text-decoration:none">'
+                      f'{s["영상 제목"]}</a>') if link else s["영상 제목"]
+        with cols[i % 2]:
+            st.markdown(f"""
+<div class="dr-wrap" style="margin-bottom:12px">
+  <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px">
+    <div style="font-size:0.88rem;font-weight:700;color:#EEEEEE;line-height:1.4;flex:1">{title_html}</div>
+    <span style="background:{sent_color};color:white;border-radius:4px;padding:2px 9px;
+                 font-size:0.68rem;font-weight:700;white-space:nowrap;flex-shrink:0">{sent}</span>
+  </div>
+  <div style="font-size:0.72rem;color:#909090;margin-bottom:10px">
+    {s.get('채널명','')} &nbsp;·&nbsp; {s.get('업로드일','')} &nbsp;·&nbsp; 댓글 {s.get('댓글수_실제',0):,}개
+  </div>
+  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">
+    <span style="background:#E8720C22;color:#E8720C;border-radius:4px;padding:2px 9px;font-size:0.7rem;font-weight:600">{s.get('영상_성격','')}</span>
+  </div>
+  <div style="font-size:0.82rem;color:#BBBBBB;line-height:1.65;margin-bottom:8px">{s.get('분위기','')}</div>
+  <div style="border-top:1px solid #2A2A2A;padding-top:10px;font-size:0.8rem;color:#AAAAAA;line-height:1.6">{s.get('댓글_요약','')}</div>
+</div>""", unsafe_allow_html=True)
 
 
 def _render_quick_summary(qs: dict):
@@ -731,6 +762,8 @@ if "is_analyzing"      not in st.session_state:
     st.session_state.is_analyzing      = False
 if "yt_urls"           not in st.session_state:
     st.session_state.yt_urls           = [""]
+if "yt_video_summaries" not in st.session_state:
+    st.session_state.yt_video_summaries = []
 
 # ─── 메인 레이아웃 ────────────────────────────────────────────
 _header_b64 = _tiger_b64()
@@ -1032,7 +1065,16 @@ with tab_dashboard:
         if not qs and not ar:
             st.info("STEP 2에서 **⚡ 빠른 요약** 또는 **🔍 정밀 분석**을 실행하세요.")
         else:
-            # 빠른 요약 결과 (항상 상단)
+            # YouTube 영상별 요약 (항상 최상단)
+            if st.session_state.yt_video_summaries:
+                st.markdown(_CARD_CSS, unsafe_allow_html=True)
+                _render_youtube_video_cards(st.session_state.yt_video_summaries)
+                st.markdown(
+                    '<hr style="border:none;border-top:1px solid #2A2A2A;margin:24px 0">',
+                    unsafe_allow_html=True
+                )
+
+            # 빠른 요약 결과
             if qs:
                 _render_quick_summary(qs)
 
@@ -1142,6 +1184,7 @@ with tab_download:
                     for p, items in st.session_state.analysis_result.get("platform_items", {}).items()
                     if items
                 },
+                "youtube_video_summaries": st.session_state.yt_video_summaries or [],
             }
             _json_bytes = json.dumps(_export, ensure_ascii=False, indent=2).encode("utf-8")
             _json_file  = f"{_label}_분석결과_{datetime.now().strftime('%Y%m%d_%H%M')}.json"
@@ -1172,6 +1215,16 @@ if quick_btn and st.session_state.collection_result:
         collection_result=st.session_state.collection_result,
         log_fn=lambda m: _qs_log.append(m),
     )
+
+    # YouTube 영상별 요약 (영상이 있을 때만)
+    _cr = st.session_state.collection_result
+    if _cr.get("yt_videos") and _cr.get("yt_comments"):
+        main_status_placeholder.caption("📺 YouTube 영상별 요약 중...")
+        st.session_state.yt_video_summaries = summarize_youtube_videos(
+            project_id=_GCP_PROJECT, region=_GCP_REGION,
+            yt_videos=_cr["yt_videos"], yt_comments=_cr["yt_comments"],
+            log_fn=lambda m: _qs_log.append(m),
+        )
 
     main_tiger_placeholder.empty()
     main_progress_placeholder.empty()
@@ -1216,6 +1269,18 @@ if analyze_btn:
     main_status_placeholder.empty()
 
     st.session_state.analysis_result = ar
+
+    # YouTube 영상별 요약 (영상이 있을 때만, 아직 없을 때만 실행)
+    _cr = st.session_state.collection_result
+    if _cr.get("yt_videos") and _cr.get("yt_comments") and not st.session_state.yt_video_summaries:
+        main_tiger_placeholder.markdown(_tiger_html("영상 요약 중"), unsafe_allow_html=True)
+        st.session_state.yt_video_summaries = summarize_youtube_videos(
+            project_id=gcp_project_id, region=gcp_region,
+            yt_videos=_cr["yt_videos"], yt_comments=_cr["yt_comments"],
+            log_fn=alog_fn,
+        )
+        main_tiger_placeholder.empty()
+
     # 분석 완료 즉시 카드뉴스 자동 생성
     st.session_state.cardnews_html = _build_cardnews_html(ar, _label)
     st.session_state.is_analyzing = False
