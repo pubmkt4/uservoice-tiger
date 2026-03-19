@@ -758,7 +758,7 @@ class DCInsideCrawler:
         try:
             if callback:
                 callback("  디시인사이드 세션 초기화 중...")
-            self._session.get("https://gall.dcinside.com/", verify=False, timeout=12)
+            self._session.get("https://gall.dcinside.com/", timeout=12)
             time.sleep(random.uniform(2.0, 4.0))
         except Exception:
             pass
@@ -778,14 +778,14 @@ class DCInsideCrawler:
         if self._blocked:
             return None
         try:
-            resp = self._session.get(url, verify=False, timeout=12)
+            resp = self._session.get(url, timeout=12)
             if resp.status_code == 403:
                 wait = random.uniform(30, 60)
                 if callback:
                     callback(f"  ⚠️ 디시 접근 제한(403) — {int(wait)}초 대기 후 재시도")
                 self._rotate_ua()
                 time.sleep(wait)
-                resp = self._session.get(url, verify=False, timeout=12)
+                resp = self._session.get(url, timeout=12)
                 if resp.status_code == 403:
                     if callback:
                         callback("  ⛔ 디시 IP 차단 확인 (연속 403) — 수집 즉시 중단")
