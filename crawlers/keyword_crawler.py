@@ -7,6 +7,11 @@ import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 import threading
 import requests
+try:
+    import cloudscraper
+    CLOUDSCRAPER_AVAILABLE = True
+except ImportError:
+    CLOUDSCRAPER_AVAILABLE = False
 from bs4 import BeautifulSoup
 import urllib3
 import pandas as pd
@@ -718,7 +723,12 @@ class DCInsideCrawler:
     def __init__(self, days_limit=30):
         self.cutoff_date = datetime.now() - timedelta(days=days_limit)
         self._blocked = False
-        self._session = requests.Session()
+        if CLOUDSCRAPER_AVAILABLE:
+            self._session = cloudscraper.create_scraper(
+                browser={"browser": "chrome", "platform": "windows", "mobile": False}
+            )
+        else:
+            self._session = requests.Session()
         self._rotate_ua()
 
     def _rotate_ua(self):
